@@ -13,9 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="maze.txt" />
+    <Filter Include="Pliki źródłowe\mazes">
+      <UniqueIdentifier>{ace99c06-d0c7-4e18-b74d-c43504e7a18c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c">
@@ -35,5 +35,19 @@
     <ClInclude Include="solver.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="maze_20.txt">
+      <Filter>Pliki źródłowe\mazes</Filter>
+    </Text>
+    <Text Include="maze_50.txt">
+      <Filter>Pliki źródłowe\mazes</Filter>
+    </Text>
+    <Text Include="maze_200.txt">
+      <Filter>Pliki źródłowe\mazes</Filter>
+    </Text>
+    <Text Include="maze_1000.txt">
+      <Filter>Pliki źródłowe\mazes</Filter>
+    </Text>
   </ItemGroup>
 </Project>

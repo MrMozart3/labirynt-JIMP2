@@ -1,8 +1,32 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "solver.h"
+#include "file_handler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+void OpenFiles(MazeData* maze, FILE** files)
+{
+	char base[10] = "chunk_";
+	char fileName[20];
+	char num[10];
+	for (int i = 0; i < maze->sizeY; i++)
+	{
+		strcpy(fileName, base);
+		sprintf(num, "%d", i);
+		strcpy(fileName, num);
+		files[i] = fopen(fileName, "r+b");
+	}
+	return;
+}
+
+void AddNumberToString(char* output, int number)
+{
+	char temp[20];
+	sprintf(temp, "%d", number);
+	strcat(output, temp);
+	return;
+}
 
 void ClearAllChunks(int max)
 {
@@ -20,160 +44,163 @@ void ClearAllChunks(int max)
 	return;
 }
 
-void GetLineFromFile(char *fileName, int lineIndex, char *output)
+void EditNumberInChunk(MazeData* maze, int chunkIndex, int lineIndex, int firstCharIndex, int newValue, FILE* optionalFilePointer)
 {
-	FILE* in = fopen(fileName, "r");
-	char line[50];
-	int lineCounter = 0;
-	while (fgets(line, 50, in) != NULL)
+	int openFile = 0;
+
+	int offset = (maze->recordSize + maze->recordOffset) * lineIndex + firstCharIndex;
+	if (optionalFilePointer == NULL) {
+		openFile = 1;
+		char fileName[30] = "chunk_";
+		AddNumberToString(fileName, chunkIndex);
+		optionalFilePointer = fopen(fileName, "r+b");
+	}
+	if (optionalFilePointer == NULL) return;
+
+	char* data = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
+	if (data == NULL) return;
+	data[maze->recordSize - 5] = '\0';
+	sprintf(data, "%d", newValue);
+	int numberLength = snprintf(NULL, 0, "%d", newValue);
+	for (int i = numberLength; i < maze->recordSize - 5; i++) {
+		data[i] = ' ';
+	}
+
+	fseek(optionalFilePointer, offset, SEEK_SET);
+	fwrite(data, sizeof(char), strlen(data), optionalFilePointer);
+
+	if (openFile == 1) {
+		fclose(optionalFilePointer);
+	}
+	free(data);
+	return;
+}
+
+void ReadDataInChunk(MazeData* maze, Tile* tile, int chunkIndex, int lineIndex, FILE* optionalFilePointer)
+{
+	int openFile = 0;
+
+	int offset = (maze->recordSize + maze->recordOffset) * lineIndex;
+	if (optionalFilePointer == NULL) {
+		openFile = 1;
+		char fileName[30] = "chunk_";
+		AddNumberToString(fileName, chunkIndex);
+		optionalFilePointer = fopen(fileName, "r+b");
+	}
+	if (optionalFilePointer == NULL) return;
+
+	fseek(optionalFilePointer, offset, SEEK_SET);
+
+	char* data = malloc(sizeof(char) * (maze->recordSize + 1));
+	if (data == NULL) return;
+	data[maze->recordSize] = '\0';
+	fread(data, sizeof(char), maze->recordSize - 5, optionalFilePointer);
+	strncpy(tile->walls, data, 4);
+	tile->walls[4] = '\0';
+	tile->dist = atoi(data + 5);
+
+	if (openFile == 1) {
+		fclose(optionalFilePointer);
+	}
+
+	free(data);
+	return;
+}
+
+void FillChunksWithNumbers(MazeData* maze, int n)
+{
+	FILE* out;
+	for (int y = 0; y < maze->sizeY; y++)
 	{
-		if (lineCounter == lineIndex) {
-			strcpy(output, line);
-			output[strlen(output) - 1] = '\0';
-			fclose(in);
-			return;
+		char fileName[30] = "chunk_";
+		AddNumberToString(fileName, y);
+
+		out = fopen(fileName, "r+b");
+		if (fopen == NULL) return;
+
+		for (int x = 0; x < maze->sizeX; x++)
+		{
+			EditNumberInChunk(maze, y, x, 5, n, out);
 		}
 
-		lineCounter++;
+		fclose(out);
 	}
-	fclose(in);
-	return;
 }
 
-void EditLineInFile(char* fileName, int lineIndex, char* text, int addNewLine)
-{
-	char tempFileName[50];
-	strcpy(tempFileName, fileName);
-	strcat(tempFileName, "_temp");
-
-	FILE* old_file = fopen(fileName, "r");
-	FILE* new_file = fopen(tempFileName, "w");
-
-	char line[100];
-	int lineCounter = 0;
-	while (fgets(line, 100, old_file) != NULL)
-	{
-		if (lineCounter == lineIndex) {
-			fprintf(new_file, text);
-
-			if (addNewLine == 1) {
-				fprintf(new_file, "\n");
-			}
-		}
-		else fprintf(new_file, line);
-
-		lineCounter++;
-	}
-	fclose(old_file);
-	fclose(new_file);
-	remove(fileName);
-	rename(tempFileName, fileName);
-	return;
-}
-
-void ChangeOutput(FILE** stream, int chunkIndex)
-{
-	char fileName[30] = "chunk_";
-	char tempNumber[20];
-	sprintf(tempNumber, "%d", chunkIndex);
-	strcat(fileName, tempNumber);
-
-	if (*stream == NULL) {
-		*stream = fopen(fileName, "a+");
-	}
-	else {
-		fclose(*stream);
-		*stream = fopen(fileName, "a+");
-	}
-	return;
-}
-
-int SaveMazeToChunks(char* fileName, int chunkSize, MazeData *maze, int *numberOfChunksOut)
+void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 {
 	FILE* out = NULL;
-
-	FILE* maze_input = fopen(fileName, "r");
-	char buff[2100];
+	FILE* in = fopen(fileName, "r");
 
 	int inputX = 0, inputY = 0;
-	int sizeX = 0, sizeY = 0;
 
+	char buff[2100];
 	char lines[3][2100];
 
+	char* additionalFill = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
+	sprintf(additionalFill, "%d", fillValue);
+	int tempLen = strlen(additionalFill);
+	for (int i = tempLen; i < maze->recordSize; i++) {
+		additionalFill[i] = ' ';
+	}
+	additionalFill[maze->recordSize] = '\0';
+
 	int y = 0;
-	int currentY = 0;
-	while (fgets(buff, 2100, maze_input) != NULL)
+
+	while (fgets(buff, 2100, in) != NULL)
 	{
-		if (y == 0) {
+		if (inputY == 0) {
 			strcpy(lines[2], buff);
-			sizeX = (strlen(buff) - 1) / 2;
+			maze->sizeX = (strlen(buff) - 1) / 2;
 		}
-		else if (y % 2 == 1) {
+		else if (inputY % 2 == 1) {
 			strcpy(lines[1], buff);
 		}
-		else if (y % 2 == 0)
+		else if (inputY % 2 == 0)
 		{
 			strcpy(lines[0], lines[2]);
 			strcpy(lines[2], buff);
 
-			int currentChunk = sizeX % chunkSize == 0 ? (currentY / chunkSize) * (sizeX / chunkSize) : (currentY / chunkSize) * (sizeX / chunkSize + 1);
-			int currentChunkX = 0;
-			ChangeOutput(&out, currentChunk);
+			//open file
+			char outFileName[30] = "chunk_";
+			AddNumberToString(outFileName, y);
+			out = fopen(outFileName, "a+");
 
-			
-			for (int i = 0; i < sizeX; i++) {
-
-				char fileName[30] = "chunk_";
-				char tempNum[20];
-				sprintf(tempNum, "%d", currentChunk);
-				strcat(fileName, tempNum);
-
-				if (i % chunkSize == 0 && currentY % chunkSize == 0) {
-					if (sizeX % chunkSize != 0 && i / chunkSize == sizeX / chunkSize) {
-						fprintf(out, "%d\n", sizeX - (sizeX / chunkSize) * chunkSize);
-					}
-					else {
-						fprintf(out, "%d\n", chunkSize);
-					}
-				}
-
-				char data[20] = { lines[0][2 * i + 1],lines[2][2 * i + 1],  lines[1][2 * i], lines[1][2 * i + 2] };
-				strcat(data, " 100000");
-
-				for (int j = 0; j < 4; j++)
-				{
-					if (data[j] == 'P') {
-						maze->start[0] = (y - 1) / 2;
-						maze->start[1] = i;
-					}
-					if (data[j] == 'K') {
-						maze->end[0] = (y - 1) / 2;
-						maze->end[1] = i;
-					}
-				}
+			//saving to file
+			for (int x = 0; x < maze->sizeX; x++)
+			{
+				char* data = malloc(sizeof(char) * (maze->recordSize + 1));
+				if (data == NULL) return;
+				data[0] = lines[0][2 * x + 1];
+				data[1] = lines[2][2 * x + 1];
+				data[2] = lines[1][2 * x];
+				data[3] = lines[1][2 * x + 2];
+				data[4] = ' ';
+				data[5] = '\0';
+				strcat(data, additionalFill);
+				data[maze->recordSize] = '\0';
 
 				fprintf(out, "%s\n", data);
 
-				currentChunkX++;
-				if (currentChunkX == chunkSize) {
-					currentChunk++;
-					currentChunkX = 0;
-					ChangeOutput(&out, currentChunk);
+				//START OR END
+				for (int i = 0; i < 4; i++)
+				{
+					if (data[i] == 'P') {
+						maze->start[0] = y;
+						maze->start[1] = x;
+					}
+					if (data[i] == 'K') {
+						maze->end[0] = y;
+						maze->end[1] = x;
+					}
 				}
-
-				if (currentChunk > numberOfChunksOut[0]) {
-					numberOfChunksOut[0] = currentChunk;
-				}
-				
 			}
-			currentY++;
+			y++;
+			fclose(out);
 		}
-		y++;
-		
+		inputY++;
 	}
-	sizeY = (y - 1) / 2;
-
-	maze->sizeY = sizeY;
-	maze->sizeX = sizeX;
-	return 0;
+	maze->sizeY = y;
+	fclose(in);
+	return;
 }

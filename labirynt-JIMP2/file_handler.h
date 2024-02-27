@@ -1,18 +1,19 @@
 #include "solver.h"
+#include <stdio.h>
 
 #ifndef FILE_HANDLER
 #define FILE_HANDLER
 
-void ClearAllChunks(int max); //removes files from chunk_0 to chunk_max
+void OpenFiles(MazeData* maze, FILE** files);
 
-void GetLineFromFile(char* fileName, int lineIndex, char* output);
+void AddNumberToString(char* output, int number);
 
-void EditLineInFile(char* fileName, int lineIndex, char* text, int addNewLine);
+void ClearAllChunks(int max);
 
-void AppendNumberToFile(char* fileName, int num, int addNewLine); //addNewLine = 1 -> add '\n'
+void EditNumberInChunk(MazeData* maze, int chunkIndex, int lineIndex, int firstCharIndex, int newValue, FILE* optionalFilePointer);
 
-void AppendToFile(char* fileName, char* text, int addNewLine); //addNewLine = 1 -> add '\n'
+void ReadDataInChunk(MazeData* maze, Tile* tile, int chunkIndex, int lineIndex, FILE* optionalFilePointer);
 
-int SaveMazeToChunks(char* fileName, int chunkSize, MazeData* maze, int* numberOfChunksOut);
+void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue);
 
 #endif
