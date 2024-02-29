@@ -10,8 +10,8 @@ int main()
 {
 	MazeData* maze = malloc(sizeof(MazeData));
 	maze->recordSize = 12;
-	maze->chunkSize = 50;
-	char mazeFileName[20] = "maze_1000.txt";
+	maze->chunkSize = 5;
+	char mazeFileName[20] = "maze_10.txt";
     //if(argc == 1) strcpy(mazeFileName, "maze_10.txt");
     //else strcpy(mazeFileName,  argv[1]);
 
@@ -24,12 +24,17 @@ int main()
 	clock_t end1 = clock();
 	printf("Time Taken To Load Maze:%f\n", ((double)(end1 - start1)) / CLOCKS_PER_SEC);
 	//TEST
+	for (int y = 0; y < 10; y++)
+	{
+		for (int x = 0; x < 10; x++)printf("%d", GetChunkIndex(maze, y, x));
+		printf("\n");
+	}
 	//Tile** test = malloc(sizeof(Tile*) * maze->chunkSize);
 	//for (int i = 0; i < maze->chunkSize; i++) test[i] = malloc(sizeof(Tile) * maze->chunkSize);
 	//LoadChunk(maze, test, 0);
 	//printf("%s %d", test[0][0].walls, test[0][0].dist);
 	//UpdateValue(maze, 0, 0, 10);
-	ClearAllChunks(100000);
+	//ClearAllChunks(100000);
 	printf("\n\n");
 	free(maze);
 }

@@ -84,6 +84,7 @@ void UpdateValue(MazeData* maze, int chunkIndex, int dataIndex, int newValue)
 	fseek(in, offset, SEEK_SET);
 	fwrite(newData, sizeof(char), maze->recordSize - 5, in);
 
+	fclose(in);
 	free(newData);
 }
 
@@ -115,7 +116,7 @@ void LoadChunk(MazeData* maze, Tile** chunk, int chunkIndex)
 			free(tempNum);
 		}
 	}
-
+	fclose(in);
 	free(data);
 }
 
