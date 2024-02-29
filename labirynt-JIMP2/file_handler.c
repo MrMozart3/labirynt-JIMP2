@@ -143,18 +143,18 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 
 	int y = 0;
 	
-	char let;
-	int countLet = 0;
-	while((let = fgetc(in)) != -1)
+	char tempC;
+	int countC = 0;
+	while((tempC = fgetc(in)) != -1)
 	{
-		if(let != '\n'){
-			buff[countLet] = let;
-			countLet++;
+		if(tempC != '\n'){
+			buff[countC] = tempC;
+			countC++;
 			continue;
 		}
 		else{
-			buff[countLet] = '\0';
-			countLet = 0;
+			buff[countC] = '\0';
+			countC = 0;
 		}
 		if (inputY == 0) {
 			strcpy(lines[2], buff);
