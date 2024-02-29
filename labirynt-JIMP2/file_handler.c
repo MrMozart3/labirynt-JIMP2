@@ -123,8 +123,10 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 {
 	FILE** out = NULL;
 	FILE* in = fopen(fileName, "r");
+	int opened = 0;
 
 	int inputX = 0, inputY = 0;
+	int horNumber;
 
 	char buff[2100];
 	char lines[3][2100];
@@ -141,11 +143,24 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 
 	int y = 0;
 	
-	while (fgets(buff, 2100, in) != NULL)
+	char let;
+	int countLet = 0;
+	while((let = fgetc(in)) != -1)
 	{
+		if(let != '\n'){
+			buff[countLet] = let;
+			countLet++;
+			continue;
+		}
+		else{
+			buff[countLet] = '\0';
+			countLet = 0;
+		}
 		if (inputY == 0) {
 			strcpy(lines[2], buff);
-			maze->sizeX = (strlen(buff) - 2) / 2;
+			maze->sizeX = (strlen(buff) - 1) / 2;
+			horNumber = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
+			out = malloc(sizeof(FILE*) * horNumber);
 		}
 		else if (inputY % 2 == 1) {
 			strcpy(lines[1], buff);
@@ -158,7 +173,6 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 			int horNumber = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
 			if (y % maze->chunkSize == 0)
 			{
-				if(y == 0)out = malloc(sizeof(FILE*) * horNumber);
 				for (int i = 0; i < horNumber; i++)
 				{
 					char outFileName[30] = "chunk_";
@@ -166,6 +180,7 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 					AddNumberToText(outFileName, currentChunk);
 					out[i] = fopen(outFileName, "ab");
 				}
+				opened = 1;
 			}
 			
 			//saving to file
@@ -180,8 +195,7 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 				data[5] = '\0';
 				strcat(data, additionalFill);
 				data[maze->recordSize] = '\0';
-				
-				//strcat(sumData, data);
+			
 				fwrite(data, sizeof(char), maze->recordSize, out[x / maze->chunkSize]);
 				
 				
@@ -204,14 +218,21 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 					{
 						fclose(out[i]);
 					}
+					opened = 0;
 				}
 			y++;
 			
 		}
 		inputY++;
 	}
+	if(opened == 1)
+	{
+		for (int i = 0; i < horNumber; i++)
+		{
+			fclose(out[i]);
+		}
+	}
 	maze->sizeY = y;
-
 	fclose(in);
 	free(out);
 	free(additionalFill);

@@ -127,6 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="maze_1000.txt" />
+    <Text Include="maze_10.txt" />
+    <Text Include="maze_200.txt" />
+    <Text Include="maze_50.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="file_handler.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="solver.c" />
@@ -134,12 +140,6 @@
   <ItemGroup>
     <ClInclude Include="file_handler.h" />
     <ClInclude Include="solver.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="maze_1000.txt" />
-    <Text Include="maze_20.txt" />
-    <Text Include="maze_200.txt" />
-    <Text Include="maze_50.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

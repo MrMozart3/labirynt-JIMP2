@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "file_handler.h"
 #include "solver.h"
 #include <stdio.h>
@@ -10,12 +11,12 @@ int main()
 	MazeData* maze = malloc(sizeof(MazeData));
 	maze->recordSize = 12;
 	maze->chunkSize = 50;
-	char mazeFileName[] = "maze_1000.txt";
-
+	char mazeFileName[20] = "maze_1000.txt";
+    //if(argc == 1) strcpy(mazeFileName, "maze_10.txt");
+    //else strcpy(mazeFileName,  argv[1]);
 
 	//CLEARING LEFTOVERS
 	ClearAllChunks(100000);
-	return 0;
 	//TXT TO CHUNKS
 	clock_t start1 = clock();
 	SaveMazeToChunks(mazeFileName, maze, 100000);
@@ -28,6 +29,7 @@ int main()
 	//LoadChunk(maze, test, 0);
 	//printf("%s %d", test[0][0].walls, test[0][0].dist);
 	//UpdateValue(maze, 0, 0, 10);
-
+	ClearAllChunks(100000);
 	printf("\n\n");
+	free(maze);
 }
