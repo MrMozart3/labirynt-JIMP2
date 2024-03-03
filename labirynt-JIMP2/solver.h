@@ -4,10 +4,10 @@
 #define SOLVER
 
 typedef struct MazeDataStruct {
-	int sizeY;
-	int sizeX;
-	int start[2]; // {y, x}
-	int end[2]; // {y, x}
+	int sizeY, sizeX;
+	int start[2], end[2]; // {y, x}
+	int chunksY, chunksX;
+	int minInChunkY, minInChunkX;
 	int recordSize;
 	int chunkSize;
 }MazeData;

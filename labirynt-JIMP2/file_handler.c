@@ -94,29 +94,34 @@ void LoadChunk(MazeData* maze, Tile** chunk, int chunkIndex)
 	AddNumberToText(fileName, chunkIndex);
 	FILE* in = fopen(fileName, "r+b");
 
+	int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
+	int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
+	printf("%d %d\n", verticalNumber, horizontalNumber);
+
 	int length = maze->chunkSize * maze->chunkSize * maze->recordSize;
 	char* data = malloc(sizeof(char) * (length + 1));
+	char* tempNum = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
 	fread(data, sizeof(char), length, in);
-	for (int y = 0; y < maze->chunkSize; y++)
+	for (int y = 0; y < verticalNumber; y++)
 	{
-		for (int x = 0; x < maze->chunkSize; x++)
+		for (int x = 0; x < horizontalNumber; x++)
 		{
 			for (int i = 0; i < 4; i++)
 			{
-				chunk[y][x].walls[i] = data[y * x + i];
+				chunk[y][x].walls[i] = data[y * maze->recordSize * maze->chunkSize + x * maze->recordSize + i];
+				//printf("%d ", y * maze->recordSize * maze->chunkSize + x * maze->recordSize + i);
 			}
 			chunk[y][x].walls[4] = '\0';
-			char* tempNum = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
 			for (int i = 5; i < maze->recordSize; i++)
 			{
-				tempNum[i - 5] = data[y * x + i];
+				tempNum[i - 5] = data[y * maze->recordSize * maze->chunkSize + x * maze->recordSize + i];
 			}
 			tempNum[maze->recordSize - 5] = '\0';
 			chunk[y][x].dist = atoi(tempNum);
-			free(tempNum);
 		}
 	}
 	fclose(in);
+	free(tempNum);
 	free(data);
 }
 
@@ -127,7 +132,6 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 	int opened = 0;
 
 	int inputX = 0, inputY = 0;
-	int horNumber;
 
 	char buff[2100];
 	char lines[3][2100];
@@ -148,6 +152,7 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 	int countC = 0;
 	while((tempC = fgetc(in)) != -1)
 	{
+		//char to char*
 		if(tempC != '\n'){
 			buff[countC] = tempC;
 			countC++;
@@ -157,11 +162,12 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 			buff[countC] = '\0';
 			countC = 0;
 		}
+		//handling lines
 		if (inputY == 0) {
 			strcpy(lines[2], buff);
 			maze->sizeX = (strlen(buff) - 1) / 2;
-			horNumber = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
-			out = malloc(sizeof(FILE*) * horNumber);
+			maze->chunksX = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
+			out = malloc(sizeof(FILE*) * maze->chunksX);
 		}
 		else if (inputY % 2 == 1) {
 			strcpy(lines[1], buff);
@@ -171,16 +177,16 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 			strcpy(lines[0], lines[2]);
 			strcpy(lines[2], buff);
 			//open file
-			int horNumber = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
 			if (y % maze->chunkSize == 0)
 			{
-				for (int i = 0; i < horNumber; i++)
+				for (int i = 0; i < maze->chunksX; i++)
 				{
 					char outFileName[30] = "chunk_";
-					int currentChunk = (y / maze->chunkSize) * horNumber + i;
+					int currentChunk = (y / maze->chunkSize) * maze->chunksX + i;
 					AddNumberToText(outFileName, currentChunk);
 					out[i] = fopen(outFileName, "ab");
 				}
+				maze->chunksY++;
 				opened = 1;
 			}
 			
@@ -215,7 +221,7 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 			}
 			if (y % maze->chunkSize == maze->chunkSize - 1)
 				{
-					for (int i = 0; i < horNumber; i++)
+					for (int i = 0; i < maze->chunksX; i++)
 					{
 						fclose(out[i]);
 					}
@@ -228,12 +234,15 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 	}
 	if(opened == 1)
 	{
-		for (int i = 0; i < horNumber; i++)
+		for (int i = 0; i < maze->chunksX; i++)
 		{
 			fclose(out[i]);
 		}
 	}
 	maze->sizeY = y;
+	maze->minInChunkY = maze->sizeX % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeX - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
+	maze->minInChunkX = maze->sizeY % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeY - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
+
 	fclose(in);
 	free(out);
 	free(additionalFill);

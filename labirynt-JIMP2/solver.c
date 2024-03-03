@@ -18,16 +18,24 @@ int GetChunkIndex(MazeData* maze, int y, int x)
 
 void FillWithDistances(MazeData *maze)
 {
-	int y = 0, x = 0;
+	int y = 0, x = 0, nextY, nextX;
 	int modY[4] = { -1, 1, 0, 0 };
 	int moxX[4] = { 0, 0, -1, 1 };
+	int distance = 1;
 
 	Tile** chunk = malloc(sizeof(Tile*) * maze->chunkSize);
-	for (int i = 0; i < maze->chunkSize; i++) chunk[i] = malloc(sizeof(Tile) * maze->chunkSize);
+	Tile** tempChunk = malloc(sizeof(Tile*) * maze->chunkSize);
+	for (int i = 0; i < maze->chunkSize; i++) {
+		chunk[i] = malloc(sizeof(Tile) * maze->chunkSize);
+		tempChunk[i] = malloc(sizeof(Tile) * maze->chunkSize);
+	}
 
 	int chunkIndex = GetChunkIndex(maze, y, x);
 	LoadChunk(maze, chunk, chunkIndex);
 
+	while (1)
+	{
+	}
 
 
 
