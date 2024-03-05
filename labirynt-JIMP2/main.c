@@ -17,10 +17,10 @@ int main()
 
 	MazeData* maze = malloc(sizeof(MazeData));
 	maze->recordSize = 14;
-	maze->chunkSize = 5;
+	maze->chunkSize = 50;
 	maze->chunksY = 0; maze->chunksX = 0;
-	maze->chunksCache = 2;
-	char mazeFileName[20] = "maze_10.txt";
+	maze->chunksCache = 5;
+	char mazeFileName[20] = "maze_1000.txt";
 	ClearAllChunks(10000);
 
 	//
@@ -43,10 +43,10 @@ int main()
 	FillWithDistances(maze);
 	clock_t end2 = clock();
 	printf("Time Taken To Fill Maze:%f\n", ((double)(end2 - start2)) / CLOCKS_PER_SEC);
-	PrintMaze(maze);
+	//PrintMaze(maze);
 	//GenerateInstructions(maze);
 	printf("\n\n");
 	free(maze);
 
-	ClearAllChunks(1000000);
+	//ClearAllChunks(1000000);
 }
