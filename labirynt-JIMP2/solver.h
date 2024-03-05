@@ -17,6 +17,8 @@ typedef struct TileStruct {
 	int dist;
 }Tile;
 
+int distDiff(MazeData* maze, int dist, int destY, int destX);
+
 int GetChunkIndex(MazeData* maze, int y, int x);
 
 void FillWithDistances(MazeData* maze);

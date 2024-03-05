@@ -41,12 +41,18 @@
     <ClCompile Include="solver.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="instructions.c">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file_handler.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
     <ClInclude Include="solver.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
+    <ClInclude Include="instructions.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
   </ItemGroup>

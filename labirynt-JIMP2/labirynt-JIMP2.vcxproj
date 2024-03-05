@@ -134,11 +134,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="file_handler.c" />
+    <ClCompile Include="instructions.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="solver.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file_handler.h" />
+    <ClInclude Include="instructions.h" />
     <ClInclude Include="solver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

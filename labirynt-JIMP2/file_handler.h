@@ -4,17 +4,19 @@
 #ifndef FILE_HANDLER
 #define FILE_HANDLER
 
+void PrintMaze(MazeData* maze);
+
 void AddNumberToText(char* text, int number);
 
 void ClearAllChunks(int max);
 
-void UpdateValue(MazeData* maze, int chunkIndex, int dataIndex, int newValue);
+void UpdateChunk(MazeData* maze, Tile** chunk, int chunkIndex);
+
+void UpdateValue(MazeData* maze, int y, int x, int newValue);
 
 void LoadChunk(MazeData* maze, Tile** chunk, int chunkIndex);
 
-//void EditNumberInChunk(MazeData* maze, int chunkIndex, int lineIndex, int firstCharIndex, int newValue, FILE* optionalFilePointer);
-
-//void ReadDataInChunk(MazeData* maze, Tile* tile, int chunkIndex, int lineIndex, FILE* optionalFilePointer);
+void LoadTile(MazeData* maze, Tile* tile, int y, int x);
 
 void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue);
 
