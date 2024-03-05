@@ -1,6 +1,6 @@
 #ifndef INSTRUCTIONS
 #define INSTRUCTIONS
 
-void GenerateInstructions(MazeData* maze);
+//void GenerateInstructions(MazeData* maze);
 
 #endif 

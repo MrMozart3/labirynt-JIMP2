@@ -78,45 +78,15 @@ void ClearAllChunks(int max)
 	return;
 }
 
-void UpdateValue(MazeData* maze, int y, int x, int newValue)
+void UpdateChunk(MazeData *maze, Chunk *chunk)
 {
-	int chunkIndex = GetChunkIndex(maze, y, x);
-	int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
-	int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
+	int horizontalNumber = chunk->chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
+	int verticalNumber = chunk->chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
 
 	char fileName[30] = "chunk_";
-	AddNumberToText(fileName, chunkIndex);
-	FILE* in = fopen(fileName, "r+b");
+	AddNumberToText(fileName, chunk->chunkIndex);
+	FILE* out = fopen(fileName, "wb");
 
-
-	int offset = maze->recordSize * ( y % maze->chunkSize * horizontalNumber + x % maze->chunkSize) + 5;
-
-	char* newData = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
-	sprintf(newData, "%d", newValue);
-	
-	int numberLength = snprintf(NULL, 0, "%d", newValue);
-	for (int i = numberLength; i < maze->recordSize - 5; i++) {
-		newData[i] = ' ';
-	}
-
-	newData[maze->recordSize - 5] = '\0';
-
-	fseek(in, offset, SEEK_SET);
-	fwrite(newData, sizeof(char), maze->recordSize - 5, in);
-
-	fclose(in);
-	free(newData);
-}
-
-void UpdateChunk(MazeData* maze, Tile **chunk, int chunkIndex)
-{
-	int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
-	int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
-
-	char fileName[30] = "chunk_";
-	AddNumberToText(fileName, chunkIndex);
-	FILE* out = fopen(fileName, "wb");	
-	
 	char* data = malloc(sizeof(char) * (horizontalNumber * verticalNumber * maze->recordSize + 1));
 	char* tempNum = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
 	for (int y = 0; y < verticalNumber; y++)
@@ -125,10 +95,10 @@ void UpdateChunk(MazeData* maze, Tile **chunk, int chunkIndex)
 		{
 			for (int i = 0; i < 4; i++)
 			{
-				data[y * horizontalNumber * maze->recordSize + x * maze->recordSize + i] = chunk[y][x].walls[i];
+				data[y * horizontalNumber * maze->recordSize + x * maze->recordSize + i] = chunk->tiles[y][x].walls[i];
 			}
 			data[y * horizontalNumber * maze->recordSize + x * maze->recordSize + 4] = ' ';
-			sprintf(tempNum, "%d", chunk[y][x].dist);
+			sprintf(tempNum, "%d", chunk->tiles[y][x].dist);
 			int temp = strlen(tempNum);
 			for (int i = 5; i < maze->recordSize; i++)
 			{
@@ -143,9 +113,11 @@ void UpdateChunk(MazeData* maze, Tile **chunk, int chunkIndex)
 	fwrite(data, sizeof(char), horizontalNumber * verticalNumber * maze->recordSize, out);
 
 	fclose(out);
+	free(tempNum);
 	free(data);
 }
 
+//najlepiej to usunac gowno jebane
 void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 {
 	int chunkIndex = GetChunkIndex(maze, y, x);
@@ -176,8 +148,10 @@ void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 	free(tempNum);
 }
 
-void LoadChunk(MazeData* maze, Tile** chunk, int chunkIndex)
+void LoadChunk(MazeData* maze, Chunk* chunk, int chunkIndex)
 {
+	chunk->chunkIndex = chunkIndex;
+
 	char fileName[30] = "chunk_";
 	AddNumberToText(fileName, chunkIndex);
 	FILE* in = fopen(fileName, "r+b");
@@ -189,22 +163,30 @@ void LoadChunk(MazeData* maze, Tile** chunk, int chunkIndex)
 	char* data = malloc(sizeof(char) * (length + 1));
 	char* tempNum = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
 	fread(data, sizeof(char), length, in);
-	for (int y = 0; y < verticalNumber; y++)
+
+	for (int y = 0; y < maze->chunkSize; y++)
 	{
-		for (int x = 0; x < horizontalNumber; x++)
+		for (int x = 0; x < maze->chunkSize; x++)
 		{
-			for (int i = 0; i < 4; i++)
+			if (y < verticalNumber && x < horizontalNumber)
 			{
-				chunk[y][x].walls[i] = data[y * maze->recordSize * horizontalNumber + x * maze->recordSize + i];
-				//printf("%d ", y * maze->recordSize * maze->chunkSize + x * maze->recordSize + i);
+				for (int i = 0; i < 4; i++)
+				{
+					chunk->tiles[y][x].walls[i] = data[y * maze->recordSize * horizontalNumber + x * maze->recordSize + i];
+					//printf("%d ", y * maze->recordSize * maze->chunkSize + x * maze->recordSize + i);
+				}
+				chunk->tiles[y][x].walls[4] = '\0';
+				for (int i = 5; i < maze->recordSize; i++)
+				{
+					tempNum[i - 5] = data[y * maze->recordSize * horizontalNumber + x * maze->recordSize + i];
+				}
+				tempNum[maze->recordSize - 5] = '\0';
+				chunk->tiles[y][x].dist = atoi(tempNum);
 			}
-			chunk[y][x].walls[4] = '\0';
-			for (int i = 5; i < maze->recordSize; i++)
-			{
-				tempNum[i - 5] = data[y * maze->recordSize * horizontalNumber + x * maze->recordSize + i];
+			else {
+				strcpy(chunk->tiles[y][x].walls, "NNNN");
+				chunk->tiles[y][x].dist = -1;
 			}
-			tempNum[maze->recordSize - 5] = '\0';
-			chunk[y][x].dist = atoi(tempNum);
 		}
 	}
 	fclose(in);

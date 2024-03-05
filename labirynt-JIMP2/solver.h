@@ -9,6 +9,7 @@ typedef struct MazeDataStruct {
 	int chunksY, chunksX;
 	int minInChunkY, minInChunkX;
 	int recordSize;
+	int chunksCache;
 	int chunkSize;
 }MazeData;
 
@@ -17,9 +18,18 @@ typedef struct TileStruct {
 	int dist;
 }Tile;
 
-int distDiff(MazeData* maze, int dist, int destY, int destX);
+typedef struct ChunkStruct {
+	Tile** tiles;
+	int chunkIndex;
+}Chunk;
+
+void MoveToPositionCache(MazeData* maze, Chunk* chunks, int startPosition, int position);
+
+int ExistsInCache(MazeData* maze, Chunk* chunks, int targetIndex);
 
 int GetChunkIndex(MazeData* maze, int y, int x);
+
+void SwapValues(MazeData* maze, Chunk* first, Chunk* second);
 
 void FillWithDistances(MazeData* maze);
 

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+/*
 void GenerateInstructions(MazeData *maze)
 {
 	int y = maze->end[0], x = maze->end[1];
@@ -71,31 +71,31 @@ void GenerateInstructions(MazeData *maze)
 				}
 				//up
 				if (dir == 0 && currentDir == 3) {
-					printf("RIGHT\n");
+					printf("LEFT\n");
 				}
 				else if (dir == 0 && currentDir == 2) {
-					printf("LEFT\n");
+					printf("RIGHT\n");
 				}
 				//down
 				else if (dir == 1 && currentDir == 2) {
-					printf("RIGHT\n");
+					printf("LEFT\n");
 				}
 				else if (dir == 1 && currentDir == 3) {
-					printf("LEFT\n");
+					printf("RIGHT\n");
 				}
 				//left
 				else if (dir == 2 && currentDir == 0) {
-					printf("RIGHT\n");
+					printf("LEFT\n");
 				}
 				else if (dir == 2 && currentDir == 1) {
-					printf("LEFT\n");
+					printf("RIGHT\n");
 				}
 				//right
 				else if (dir == 3 && currentDir == 1) {
-					printf("RIGHT\n");
+					printf("LEFT\n");
 				}
 				else if (dir == 3 && currentDir == 0) {
-					printf("LEFT\n");
+					printf("RIGHT\n");
 				}
 				dir = currentDir;
 				currentForward = 1;
@@ -107,4 +107,4 @@ void GenerateInstructions(MazeData *maze)
 		}
 		break;
 	}
-}
+}*/
