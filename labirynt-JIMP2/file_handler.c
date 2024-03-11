@@ -151,6 +151,32 @@ void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 	free(tempNum);
 }
 
+int VeritfyFile(char* fileName, MazeData* maze)
+{
+	FILE* in = fopen(fileName, "r");
+
+	char c;
+	int tempX = 0;
+
+	while ((c = getc(in)) != EOF)
+	{
+		if (c == '\n') {
+			if (y == 0) {
+				maze->sizeX = x - 1 / 2;
+			}
+			else {
+
+			}
+
+			y++;
+			x = 0;
+		}
+		else {
+			tempX++;
+		}
+	}
+}
+
 void LoadChunk(MazeData* maze, Chunk* chunk, int chunkIndex)
 {
 	chunk->chunkIndex = chunkIndex;
@@ -326,7 +352,15 @@ void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue)
 {
 	FILE* in = fopen(fileName, "rb");
 	FILE* out = NULL;
-	int opened = 0;
+
+	char* additionalFill = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
+	sprintf(additionalFill, "%d", fillValue);
+	int tempLen = strlen(additionalFill);
+	for (int i = tempLen; i < maze->recordSize - 5; i++) {
+		additionalFill[i] = ' ';
+	}
+	additionalFill[maze->recordSize - 5] = '\0';
+
 	for (int y = 0; y < maze->chunksY; y++)
 	{
 		for (int x = 0; x < maze->chunksX; x++)
@@ -339,17 +373,57 @@ void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue)
 			AddNumberToText(tempFileName, chunkIndex);
 			out = fopen(tempFileName, "w");
 
-			char* line = malloc(sizeof(char) * (horizontalNumber * 2 + 1) + 1);
-			//readline
-			for (int i = 0; i < verticalNumber; i++)
+			int lineLength = horizontalNumber * 2 + 1;
+			char** chunkText = malloc(sizeof(char*) * (verticalNumber * 2 + 1));
+			for(int i = 0; i < verticalNumber * 2 + 1; i++) chunkText[i] = malloc(sizeof(char) * (lineLength + 1));
+			//readchunk
+			for (int i = 0; i < verticalNumber * 2 + 1; i++)
 			{
-				//fseek(out, y *)
-				//fread(line, sizeof(char), (horizontalNumber * 2 + 1, out);
+				int seekIndex = (y * 2 * maze->chunkSize + i) * (maze->sizeX * 2 + 1 + maze->terminatorSize) + (x * maze->chunkSize) * 2;
+				fseek(in, seekIndex, SEEK_SET);
+				fread(chunkText[i], sizeof(char), lineLength, in);
+				chunkText[i][lineLength] = '\0';
+				//printf("%s %d\n", line[i], seekIndex);
 			}
-			free(line);
+			//processchunk
+			char* record = malloc(sizeof(char) * (maze->recordSize + 1));
+			char* sumRecord = malloc(sizeof(char) * (maze->recordSize * verticalNumber * horizontalNumber + 1));
+			int sumCounter = 0;
+			for (int tempY = 1; tempY < verticalNumber * 2 + 1; tempY+=2)
+			{
+				for (int tempX = 1; tempX < horizontalNumber * 2 + 1; tempX+=2)
+				{
+					record[0] = chunkText[tempY - 1][tempX];
+					record[1] = chunkText[tempY + 1][tempX];
+					record[2] = chunkText[tempY][tempX - 1];
+					record[3] = chunkText[tempY][tempX + 1];
+					record[4] = ' ';
+
+					for (int i = 5; i < maze->recordSize; i++)
+					{
+						record[i] = additionalFill[i - 5];
+					}
+					record[maze->recordSize] = '\0';
+
+					for (int i = 0; i < maze->recordSize; i++) {
+						sumRecord[i + sumCounter] = record[i];
+					}
+					sumCounter += 15;
+
+				}
+			}
+			//save to file and free
+			sumRecord[maze->recordSize * verticalNumber * horizontalNumber] = '\0';
+			fprintf(out, "%s", sumRecord);
+
+			for (int i = 0; i < verticalNumber * 2 + 1; i++) free(chunkText[i]);
+			free(chunkText);
+			free(record);
+			free(sumRecord);
 			fclose(out);
 		}
 	}
 
 	fclose(in);
+	free(additionalFill);
 }

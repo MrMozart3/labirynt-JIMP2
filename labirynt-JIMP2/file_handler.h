@@ -8,7 +8,7 @@ void PrintMaze(MazeData* maze);
 
 void AddNumberToText(char* text, int number);
 
-void ClearAllChunks(int max);
+void ClearAllChunks(int max, int StopAfterError);
 
 void UpdateChunk(MazeData* maze, Chunk* chunk);
 

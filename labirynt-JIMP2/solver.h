@@ -11,6 +11,7 @@ typedef struct MazeDataStruct {
 	int recordSize;
 	int chunksCache;
 	int chunkSize;
+	int terminatorSize;
 }MazeData;
 
 typedef struct TileStruct {

@@ -7,6 +7,37 @@
 #include <string.h>
 #include <time.h>
 
+void Test(int numberOfFiles)
+{
+	char file1[30] = "chunk_";
+	char file2[30] = "chunk_test_50";
+	for (int i = 0; i < numberOfFiles; i++)
+	{
+		char file1_temp[30];
+		strcpy(file1_temp, file1);
+		AddNumberToText(file1_temp, i);
+
+		char file2_temp[30];
+		strcpy(file2_temp, file2);
+		AddNumberToText(file2_temp, i);
+
+		FILE* f1 = fopen(file1_temp, "r");
+		FILE* f2 = fopen(file2_temp, "r");
+
+		char c1, c2;
+		int j = 0;
+		while ((c1 = fgetc(f1)) != EOF && (c2 = fgetc(f2)) != EOF)
+		{
+			if (c1 != c2) {
+				printf("plik chunk_%d  znak %d", i, j);
+				return;
+			}
+			j++;
+		}
+		fclose(f1);
+		fclose(f2);
+	}
+}
 
 
 int main()
@@ -16,24 +47,34 @@ int main()
 	//
 
 	MazeData* maze = malloc(sizeof(MazeData));
-	maze->recordSize = 14;
-	maze->chunkSize = 4;
+	maze->recordSize = 15;
+	maze->chunkSize = 50;
 	maze->chunksY = 0; maze->chunksX = 0;
-	maze->chunksCache = 2;
-	char mazeFileName[20] = "maze_10.txt";
+	maze->chunksCache = 10;
+	maze->terminatorSize = 1;
+	char mazeFileName[20] = "maze_1000.txt";
 	ClearAllChunks(10000000, 1);
 
 	//
 	//			TXT TO CHUNKS
 	//
 
-	clock_t start1 = clock();
+	clock_t start = clock();
 	SaveMazeToChunks(mazeFileName, maze, 1000000);
 	printf("Zaladowano plik %s do %dx%d chunkow\nRozmiar  y:%d  x:%d\nPoczatek  y:%d  x:%d\nKoniec  y:%d  x:%d\n\n",
 		mazeFileName, maze->chunksY, maze->chunksX, maze->sizeY, maze->sizeX, maze->start[0], maze->start[1], maze->end[0], maze->end[1]);
+	clock_t end = clock();
+	printf("Time Taken To Load Maze:%f\n\n", ((double)(end - start)) / CLOCKS_PER_SEC);
+
+
+	//
+	//			TXT TO CHUNKS
+	//
+
+	clock_t start1 = clock();
+	SaveMazeToChunksTest(mazeFileName, maze, 1000000);
 	clock_t end1 = clock();
 	printf("Time Taken To Load Maze:%f\n\n", ((double)(end1 - start1)) / CLOCKS_PER_SEC);
-	SaveMazeToChunksTest(mazeFileName, maze, 1000000);
 
 	//
 	//			FILLING WITH DISTANCE
@@ -64,5 +105,5 @@ int main()
 	printf("\n\n");
 	free(maze);
 
-	ClearAllChunks(1000000, 1);
+	//ClearAllChunks(1000000, 1);
 }
