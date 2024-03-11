@@ -58,7 +58,7 @@ void SwapValues(MazeData *maze, Chunk *first, Chunk *second)
 
 void FillWithDistances(MazeData* maze)
 {
-	int y = 0, x = 0;//int y = maze->start[0], x = maze->start[1];
+	int y = maze->end[0], x = maze->end[1];
 	int modY[4] = { -1, 1, 0, 0 };
 	int modX[4] = { 0, 0, -1, 1 };
 	int distance = 1, currentChunk = -1;
@@ -77,6 +77,8 @@ void FillWithDistances(MazeData* maze)
 		LoadChunk(maze, &chunks[i], i);
 	}
 	//loop
+	LoadChunk(maze, &chunks[maze->chunksCache - 1], GetChunkIndex(maze, y, x));
+	//
 	while (1)
 	{
 		//debug

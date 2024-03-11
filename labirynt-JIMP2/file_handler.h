@@ -18,4 +18,6 @@ void LoadTile(MazeData* maze, Tile* tile, int y, int x);
 
 void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue);
 
+void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue);
+
 #endif

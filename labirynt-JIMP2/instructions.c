@@ -5,21 +5,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/*
-void GenerateInstructions(MazeData *maze)
+
+void GenerateInstructions(MazeData* maze, FILE* out)
 {
-	int y = maze->end[0], x = maze->end[1];
+	int y = maze->start[0], x = maze->start[1];
 	int modY[4] = { -1, 1, 0, 0 };
 	int modX[4] = { 0, 0, -1, 1 };
 	int distance = -1;
 
-	Tile **chunk = malloc(sizeof(Tile*) * maze->chunkSize);
-	for (int i = 0; i < maze->chunkSize; i++) {
-		chunk[i] = malloc(sizeof(Tile) * maze->chunkSize);
+	Chunk* chunk = malloc(sizeof(Chunk) * 2);
+	for (int k = 0; k < 2; k++)
+	{
+		chunk[k].tiles = malloc(sizeof(Tile*) * maze->chunkSize);
+		for (int i = 0; i < maze->chunkSize; i++) {
+			chunk[k].tiles[i] = malloc(sizeof(Tile) * maze->chunkSize);
+		}
 	}
 	int currentChunk = -1;
 
-	int dir = 2, currentDir;
+	int dir = 3, currentDir;
 	int currentForward = 0;
 
 	int repeatLoop = 0;
@@ -30,18 +34,18 @@ void GenerateInstructions(MazeData *maze)
 		if (GetChunkIndex(maze, y, x) != currentChunk)
 		{
 			currentChunk = GetChunkIndex(maze, y, x);
-			LoadChunk(maze, chunk, currentChunk);
+			LoadChunk(maze, &chunk[0], currentChunk);
 			if (distance == -1) {
-				distance = chunk[y % maze->chunkSize][x % maze->chunkSize].dist;
+				distance = chunk[0].tiles[y % maze->chunkSize][x % maze->chunkSize].dist;
 			}
 			//printf("%d\n", currentChunk);
 		}
 		for (int i = 0; i < 4; i++)
 		{
-			if (chunk[y % maze->chunkSize][x % maze->chunkSize].walls[i] == ' ')
+			if (chunk->tiles[y % maze->chunkSize][x % maze->chunkSize].walls[i] == ' ')
 			{
 				if (GetChunkIndex(maze, y + modY[i], x + modX[i]) == currentChunk) {
-					if (chunk[y % maze->chunkSize + modY[i]][x % maze->chunkSize + modX[i]].dist == distance - 1) {
+					if (chunk[0].tiles[(y + modY[i]) % maze->chunkSize][(x + modX[i]) % maze->chunkSize].dist == distance - 1) {
 						y += modY[i];
 						x += modX[i];
 						distance--;
@@ -50,14 +54,16 @@ void GenerateInstructions(MazeData *maze)
 						break;
 					}
 				}
-				else if (distDiff(maze, chunk[y % maze->chunkSize][x % maze->chunkSize].dist, y + modY[i], x + modX[i]) == -1) {
-					UpdateChunk(maze, chunk, currentChunk);
-					y += modY[i];
-					x += modX[i];
-					distance--;
-					currentDir = i;
-					repeatLoop = 1;
-					break;
+				else {
+					LoadChunk(maze, &chunk[1], GetChunkIndex(maze, y + modY[i], x + modX[i]));
+					if (chunk[1].tiles[(y + modY[i]) % maze->chunkSize][(x + modX[i]) % maze->chunkSize].dist == distance - 1) {
+						y += modY[i];
+						x += modX[i];
+						distance--;
+						currentDir = i;
+						repeatLoop = 1;
+						break;
+					}
 				}
 			}
 		}
@@ -67,35 +73,35 @@ void GenerateInstructions(MazeData *maze)
 			}
 			else {
 				if (currentForward > 0) {
-					printf("FORWARD %d\n", currentForward);
+					fprintf(out, "FORWARD %d\n", currentForward);
 				}
 				//up
 				if (dir == 0 && currentDir == 3) {
-					printf("LEFT\n");
+					fprintf(out, "RIGHT\n");
 				}
 				else if (dir == 0 && currentDir == 2) {
-					printf("RIGHT\n");
+					fprintf(out, "LEFT\n");
 				}
 				//down
 				else if (dir == 1 && currentDir == 2) {
-					printf("LEFT\n");
+					fprintf(out, "RIGHT\n");
 				}
 				else if (dir == 1 && currentDir == 3) {
-					printf("RIGHT\n");
+					fprintf(out, "LEFT\n");
 				}
 				//left
 				else if (dir == 2 && currentDir == 0) {
-					printf("LEFT\n");
+					fprintf(out, "RIGHT\n");
 				}
 				else if (dir == 2 && currentDir == 1) {
-					printf("RIGHT\n");
+					fprintf(out, "LEFT\n");
 				}
 				//right
 				else if (dir == 3 && currentDir == 1) {
-					printf("LEFT\n");
+					fprintf(out, "RIGHT\n");
 				}
 				else if (dir == 3 && currentDir == 0) {
-					printf("RIGHT\n");
+					fprintf(out, "LEFT\n");
 				}
 				dir = currentDir;
 				currentForward = 1;
@@ -103,8 +109,8 @@ void GenerateInstructions(MazeData *maze)
 			continue;
 		}
 		if (currentForward > 0) {
-			printf("FORWARD %d\n", currentForward);
+			fprintf(out, "FORWARD %d\n", currentForward);
 		}
 		break;
 	}
-}*/
+}

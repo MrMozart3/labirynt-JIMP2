@@ -63,7 +63,7 @@ void AddNumberToText(char* text, int number)
 	return;
 }
 
-void ClearAllChunks(int max)
+void ClearAllChunks(int max, int StopAfterError)
 {
 	printf("Removing Data, successfully removed:\n");
 	int count = 0;
@@ -73,6 +73,9 @@ void ClearAllChunks(int max)
 
 		if (remove(fileName) == 0)
 		count++;
+		else if (StopAfterError == 1) {
+			break;
+		}
 	}
 	printf("Removed %d files\n\n", count);
 	return;
@@ -317,4 +320,36 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 	free(additionalFill);
 	free(data);
 	return;
+}
+
+void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue)
+{
+	FILE* in = fopen(fileName, "rb");
+	FILE* out = NULL;
+	int opened = 0;
+	for (int y = 0; y < maze->chunksY; y++)
+	{
+		for (int x = 0; x < maze->chunksX; x++)
+		{
+			int chunkIndex = y * maze->chunksX + x;
+			int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
+			int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
+
+			char tempFileName[30] = "chunk_";
+			AddNumberToText(tempFileName, chunkIndex);
+			out = fopen(tempFileName, "w");
+
+			char* line = malloc(sizeof(char) * (horizontalNumber * 2 + 1) + 1);
+			//readline
+			for (int i = 0; i < verticalNumber; i++)
+			{
+				//fseek(out, y *)
+				//fread(line, sizeof(char), (horizontalNumber * 2 + 1, out);
+			}
+			free(line);
+			fclose(out);
+		}
+	}
+
+	fclose(in);
 }
