@@ -151,41 +151,46 @@ void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 	free(tempNum);
 }
 
-int VeritfyFile(char* fileName, MazeData* maze)
+int VerifyFile(char* fileName, MazeData* maze)
 {
 	FILE* in = fopen(fileName, "r");
-	int initialCounter = 0;
+	int initialCounter = 0, foundEndingSymbols = 0;
+
+	char buff[2];
+	buff[1] = '\0';
 	while (1)
 	{
-		char buff[2];
-		buff[1] = '\0';
 		fread(buff, sizeof(char), 1, in);
 		if (buff[0] == ' ' || buff[0] == 'X') {
+			if (foundEndingSymbols == 1) {
+				break;
+			}
 			initialCounter++;
 		}
 		else {
+			foundEndingSymbols = 1;
+			maze->terminatorSize++;
 		}
 	}
+	//configure based on initial counter
+	if (initialCounter % 2 != 1) {
+		return 1;
+	}
 
-	char c;
+	maze->sizeX = (initialCounter - 1) / 2;
+	maze->chunksX = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
+
+	foundEndingSymbols = 0;
+
 	int tempX = 0;
+	int tempY = 0;
 
-	while ((c = getc(in)) != EOF)
+	fseek(in, 0, SEEK_SET);
+
+	while (1)
 	{
-		if (c == '\n') {
-			if (y == 0) {
-				maze->sizeX = x - 1 / 2;
-			}
-			else {
-
-			}
-
-			y++;
-			x = 0;
-		}
-		else {
-			tempX++;
-		}
+		if (buff[0] == '\n');
+		fread(buff, sizeof(char), 1, in);
 	}
 }
 
