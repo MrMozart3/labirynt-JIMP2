@@ -10,7 +10,7 @@
 void Test(int numberOfFiles)
 {
 	char file1[30] = "chunk_";
-	char file2[30] = "chunk_test_50";
+	char file2[30] = "chunk_test_";
 	for (int i = 0; i < numberOfFiles; i++)
 	{
 		char file1_temp[30];
@@ -47,12 +47,12 @@ int main()
 	//
 
 	MazeData* maze = malloc(sizeof(MazeData));
-	maze->recordSize = 15;
+	maze->recordSize = 16;
 	maze->chunkSize = 50;
 	maze->chunksY = 0; maze->chunksX = 0;
-	maze->chunksCache = 10;
-	maze->terminatorSize = 1;
-	char mazeFileName[20] = "maze_1000.txt";
+	maze->chunksCache = 5;
+	maze->terminatorSize = 2;
+	char mazeFileName[20] = "maze_200.txt";
 	ClearAllChunks(10000000, 1);
 
 	//
@@ -75,7 +75,8 @@ int main()
 	SaveMazeToChunksTest(mazeFileName, maze, 1000000);
 	clock_t end1 = clock();
 	printf("Time Taken To Load Maze:%f\n\n", ((double)(end1 - start1)) / CLOCKS_PER_SEC);
-
+	//Test(maze->chunksY * maze->chunksX);
+	
 	//
 	//			FILLING WITH DISTANCE
 	//

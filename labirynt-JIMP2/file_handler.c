@@ -154,6 +154,18 @@ void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 int VeritfyFile(char* fileName, MazeData* maze)
 {
 	FILE* in = fopen(fileName, "r");
+	int initialCounter = 0;
+	while (1)
+	{
+		char buff[2];
+		buff[1] = '\0';
+		fread(buff, sizeof(char), 1, in);
+		if (buff[0] == ' ' || buff[0] == 'X') {
+			initialCounter++;
+		}
+		else {
+		}
+	}
 
 	char c;
 	int tempX = 0;
@@ -369,7 +381,7 @@ void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue)
 			int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
 			int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
 
-			char tempFileName[30] = "chunk_";
+			char tempFileName[30] = "chunk_test_";
 			AddNumberToText(tempFileName, chunkIndex);
 			out = fopen(tempFileName, "w");
 
@@ -408,7 +420,7 @@ void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue)
 					for (int i = 0; i < maze->recordSize; i++) {
 						sumRecord[i + sumCounter] = record[i];
 					}
-					sumCounter += 15;
+					sumCounter += maze->recordSize;
 
 				}
 			}
