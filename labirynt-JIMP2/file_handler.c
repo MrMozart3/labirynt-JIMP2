@@ -153,23 +153,22 @@ void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 
 int VerifyFile(char* fileName, MazeData* maze)
 {
-	FILE* in = fopen(fileName, "r");
-	int initialCounter = 0, foundEndingSymbols = 0;
+	FILE* in = fopen(fileName, "rb");
+	int initialCounter = 0;
 
-	char buff[2];
-	buff[1] = '\0';
+	char c;
 	while (1)
 	{
-		fread(buff, sizeof(char), 1, in);
-		if (buff[0] == ' ' || buff[0] == 'X') {
-			if (foundEndingSymbols == 1) {
+		c = fgetc(in);
+		
+		if (c == '\n' || c == '\r') {
+			maze->terminatorSize++;	
+		}
+		else {
+			if (maze->terminatorSize > 0) {
 				break;
 			}
 			initialCounter++;
-		}
-		else {
-			foundEndingSymbols = 1;
-			maze->terminatorSize++;
 		}
 	}
 	//configure based on initial counter
@@ -180,18 +179,50 @@ int VerifyFile(char* fileName, MazeData* maze)
 	maze->sizeX = (initialCounter - 1) / 2;
 	maze->chunksX = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
 
-	foundEndingSymbols = 0;
-
 	int tempX = 0;
 	int tempY = 0;
+	int tempTerm = 0;
 
 	fseek(in, 0, SEEK_SET);
 
 	while (1)
 	{
-		if (buff[0] == '\n');
-		fread(buff, sizeof(char), 1, in);
+		c = fgetc(in);
+		if (c == '\n' || c == '\r')
+		{
+			tempTerm++;
+			if (tempTerm == maze->terminatorSize) {
+				tempTerm = 0;
+				tempX = 0;
+				tempY++;
+			}
+			continue;
+		}
+		else if(c == 'X' || c == ' ' || c == 'K' || c == 'P'){
+			//start
+			if (c == 'P') {
+			}
+
+			tempX++;
+		}
+		else if (c == -1) {
+			break;
+		}
+		else {
+			return 1;
+		}
 	}
+
+	maze->sizeY = (tempY - 1) / 2;
+	maze->chunksY = maze->sizeY % maze->chunkSize == 0 ? maze->sizeY / maze->chunkSize : maze->sizeY / maze->chunkSize + 1;
+
+	//start-end
+	maze->start[0] = 0; maze->start[1] = 0;
+	maze->end[0] = maze->sizeY - 1; maze->end[1] = maze->sizeX - 1;
+
+	//mins
+	maze->minInChunkY = maze->sizeX % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeX - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
+	maze->minInChunkX = maze->sizeY % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeY - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
 }
 
 void LoadChunk(MazeData* maze, Chunk* chunk, int chunkIndex)
@@ -386,7 +417,7 @@ void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue)
 			int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
 			int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
 
-			char tempFileName[30] = "chunk_test_";
+			char tempFileName[30] = "chunk_";
 			AddNumberToText(tempFileName, chunkIndex);
 			out = fopen(tempFileName, "w");
 

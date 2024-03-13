@@ -48,11 +48,11 @@ int main()
 
 	MazeData* maze = malloc(sizeof(MazeData));
 	maze->recordSize = 16;
-	maze->chunkSize = 5;
+	maze->chunkSize = 25;
 	maze->chunksY = 0; maze->chunksX = 0;
-	maze->chunksCache = 2;
+	maze->chunksCache = 10;
 	maze->terminatorSize = 0;
-	char mazeFileName[20] = "maze_10.txt";
+	char mazeFileName[20] = "maze_1000.txt";
 	ClearAllChunks(10000000, 1);
 
 	//
@@ -66,9 +66,8 @@ int main()
 	printf("Zaladowano plik %s do %dx%d chunkow\nRozmiar  y:%d  x:%d\nPoczatek  y:%d  x:%d\nKoniec  y:%d  x:%d\nMinimum y:%d x:%d\nTerminator size:%d\n\n",
 		mazeFileName, maze->chunksY, maze->chunksX, maze->sizeY, maze->sizeX, maze->start[0], maze->start[1], maze->end[0], maze->end[1], maze->minInChunkY, maze->minInChunkX, maze->terminatorSize);
 
-	printf("Time Taken To Load Maze:%f\n\n", ((double)(end0 - start0)) / CLOCKS_PER_SEC);
+	printf("Time Taken Verify Maze:%f\n\n", ((double)(end0 - start0)) / CLOCKS_PER_SEC);
 
-	return 0;
 	/*
 	clock_t start = clock();
 	SaveMazeToChunks(mazeFileName, maze, 1000000);
@@ -117,5 +116,5 @@ int main()
 	printf("\n\n");
 	free(maze);
 
-	//ClearAllChunks(1000000, 1);
+	ClearAllChunks(1000000, 1);
 }
