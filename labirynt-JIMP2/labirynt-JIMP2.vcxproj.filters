@@ -13,22 +13,28 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Pliki źródłowe\mazes">
+    <Filter Include="Pliki zasobów\mazes">
       <UniqueIdentifier>{ace99c06-d0c7-4e18-b74d-c43504e7a18c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="maze_10.txt">
-      <Filter>Pliki źródłowe\mazes</Filter>
+      <Filter>Pliki zasobów\mazes</Filter>
     </Text>
     <Text Include="maze_50.txt">
-      <Filter>Pliki źródłowe\mazes</Filter>
+      <Filter>Pliki zasobów\mazes</Filter>
     </Text>
     <Text Include="maze_200.txt">
-      <Filter>Pliki źródłowe\mazes</Filter>
+      <Filter>Pliki zasobów\mazes</Filter>
     </Text>
     <Text Include="maze_1000.txt">
-      <Filter>Pliki źródłowe\mazes</Filter>
+      <Filter>Pliki zasobów\mazes</Filter>
+    </Text>
+    <Text Include="maze_512.txt">
+      <Filter>Pliki zasobów\mazes</Filter>
+    </Text>
+    <Text Include="maze_10_2.txt">
+      <Filter>Pliki zasobów\mazes</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
@@ -46,14 +52,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="instructions.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
     <ClInclude Include="file_handler.h">
-      <Filter>Pliki źródłowe</Filter>
+      <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="solver.h">
-      <Filter>Pliki źródłowe</Filter>
-    </ClInclude>
-    <ClInclude Include="instructions.h">
-      <Filter>Pliki źródłowe</Filter>
+      <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
