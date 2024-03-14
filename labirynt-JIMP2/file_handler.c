@@ -199,10 +199,6 @@ int VerifyFile(char* fileName, MazeData* maze)
 			continue;
 		}
 		else if(c == 'X' || c == ' ' || c == 'K' || c == 'P'){
-			//start
-			if (c == 'P') {
-			}
-
 			tempX++;
 		}
 		else if (c == -1) {
@@ -223,6 +219,10 @@ int VerifyFile(char* fileName, MazeData* maze)
 	//mins
 	maze->minInChunkY = maze->sizeX % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeX - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
 	maze->minInChunkX = maze->sizeY % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeY - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
+
+
+	fclose(in);
+	return 0;
 }
 
 void LoadChunk(MazeData* maze, Chunk* chunk, int chunkIndex)
@@ -272,131 +272,6 @@ void LoadChunk(MazeData* maze, Chunk* chunk, int chunkIndex)
 }
 
 void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
-{
-	FILE** out = NULL;
-	FILE* in = fopen(fileName, "r");
-	int opened = 0;
-
-	int inputX = 0, inputY = 0;
-
-	char buff[2100];
-	char lines[3][2100];
-
-	char* additionalFill = malloc(sizeof(char) * (maze->recordSize - 5 + 1));
-	sprintf(additionalFill, "%d", fillValue);
-	int tempLen = strlen(additionalFill);
-	for (int i = tempLen; i < maze->recordSize - 5; i++) {
-		additionalFill[i] = ' ';
-	}
-	additionalFill[maze->recordSize - 5] = '\0';
-
-	char* data = malloc(sizeof(char) * (maze->recordSize + 1));
-
-	int y = 0;
-	
-	char tempC;
-	int countC = 0;
-	while((tempC = fgetc(in)) != -1)
-	{
-		//char to char*
-		if(tempC != '\n'){
-			buff[countC] = tempC;
-			countC++;
-			continue;
-		}
-		else{
-			buff[countC] = '\0';
-			countC = 0;
-		}
-		//handling lines
-		if (inputY == 0) {
-			strcpy(lines[2], buff);
-			maze->sizeX = (strlen(buff) - 1) / 2;
-			maze->chunksX = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
-			out = malloc(sizeof(FILE*) * maze->chunksX);
-		}
-		else if (inputY % 2 == 1) {
-			strcpy(lines[1], buff);
-		}
-		else if (inputY % 2 == 0)
-		{
-			strcpy(lines[0], lines[2]);
-			strcpy(lines[2], buff);
-			//open file
-			if (y % maze->chunkSize == 0)
-			{
-				for (int i = 0; i < maze->chunksX; i++)
-				{
-					char outFileName[30] = "chunk_";
-					int currentChunk = (y / maze->chunkSize) * maze->chunksX + i;
-					AddNumberToText(outFileName, currentChunk);
-					out[i] = fopen(outFileName, "ab");
-				}
-				maze->chunksY++;
-				opened = 1;
-			}
-			
-			//saving to file
-			for (int x = 0; x < maze->sizeX; x++)
-			{
-				
-				data[0] = lines[0][2 * x + 1];
-				data[1] = lines[2][2 * x + 1];
-				data[2] = lines[1][2 * x];
-				data[3] = lines[1][2 * x + 2];
-				data[4] = ' ';
-				data[5] = '\0';
-				strcat(data, additionalFill);
-				data[maze->recordSize] = '\0';
-			
-				fwrite(data, sizeof(char), maze->recordSize, out[x / maze->chunkSize]);
-				
-				
-				//START OR END
-				for (int i = 0; i < 4; i++)
-				{
-					if (data[i] == 'P') {
-						maze->start[0] = y;
-						maze->start[1] = x;
-					}
-					if (data[i] == 'K') {
-						maze->end[0] = y;
-						maze->end[1] = x;
-					}
-				}
-			}
-			if (y % maze->chunkSize == maze->chunkSize - 1)
-				{
-					for (int i = 0; i < maze->chunksX; i++)
-					{
-						fclose(out[i]);
-					}
-					opened = 0;
-				}
-			y++;
-			
-		}
-		inputY++;
-	}
-	if(opened == 1)
-	{
-		for (int i = 0; i < maze->chunksX; i++)
-		{
-			fclose(out[i]);
-		}
-	}
-	maze->sizeY = y;
-	maze->minInChunkY = maze->sizeX % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeX - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
-	maze->minInChunkX = maze->sizeY % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeY - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
-
-	fclose(in);
-	free(out);
-	free(additionalFill);
-	free(data);
-	return;
-}
-
-void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue)
 {
 	FILE* in = fopen(fileName, "rb");
 	FILE* out = NULL;

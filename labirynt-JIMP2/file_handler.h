@@ -20,6 +20,4 @@ int VerifyFile(char* fileName, MazeData* maze);
 
 void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue);
 
-void SaveMazeToChunksTest(char* fileName, MazeData* maze, int fillValue);
-
 #endif

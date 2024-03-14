@@ -113,4 +113,15 @@ void GenerateInstructions(MazeData* maze, FILE* out)
 		}
 		break;
 	}
+	
+
+	for (int k = 0; k < 2; k++)
+	{
+		for (int i = 0; i < maze->chunkSize; i++) {
+			free(chunk[k].tiles[i]);
+		}
+		free(chunk[k].tiles);
+	}
+	free(chunk);
+	
 }
