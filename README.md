@@ -16,8 +16,8 @@ Aby uruchomić program, należy postępować zgodnie z poniższymi krokami:
 4. W terminalu wpisz: `./labsolver` z odpowiednimi parametrami.
 
 Przykłady użycia:
-./labsolver -l labirynt.txt -f rozwiazanie.txt
-./labsolver -l labirynt.txt -f rozwiazanie.txt -d
+'./labsolver -l labirynt.txt -f rozwiazanie.txt'
+'./labsolver -l labirynt.txt -f rozwiazanie.txt -d'
 
 
 Więcej informacji na temat parametrów wejściowych znajdziesz w sekcji "Parametry wejściowe".
@@ -47,6 +47,6 @@ Więcej informacji na temat kodów błędów znajdziesz w dokumentacji.
 ## Instrukcja HELP
 
 Aby uzyskać pomoc, wpisz:
-./labsolver -h
+'./labsolver -h'
 
 
