@@ -2,39 +2,51 @@
 
 ---
 
-## Spis treści
-
-1. [Zasady działania](#zasady-działania)
-2. [Dane wejściowe i wyjściowe](#dane-wejściowe-i-wyjściowe)
-3. [Obsługa błędów](#obsługa-błędów)
-4. [Instrukcja HELP](#instrukcja-help)
-
----
-
 ## Zasady działania
 
-Program w języku C służy do rozwiązywania labiryntów z ograniczeniem pamięci, dzieląc je na chunki.
+**Labsolver** jest programem napisanym w języku C, służącym do rozwiązywania labiryntów z ograniczeniem pamięci. Aby ograniczyć zużycie pamięci, labirynt dzielony jest na mniejsze elementy zwane "chunkami". Program przejmuje labirynt w formie tekstowej i rozwiązuje go, korzystając z dynamicznego przydziału pamięci.
+
+### Przykład użycia
+
+Aby uruchomić program, należy postępować zgodnie z poniższymi krokami:
+
+1. Pobierz pliki programu.
+2. Umieść labirynt w formacie opisanym w sekcji "Format przekazywanego labiryntu" w katalogu z pobranymi plikami.
+3. Uruchom plik makefile.
+4. W terminalu wpisz: `./labsolver` z odpowiednimi parametrami.
+
+Przykłady użycia:
+./labsolver -l labirynt.txt -f rozwiazanie.txt
+./labsolver -l labirynt.txt -f rozwiazanie.txt -d
+
+
+Więcej informacji na temat parametrów wejściowych znajdziesz w sekcji "Parametry wejściowe".
 
 ---
 
 ## Dane wejściowe i wyjściowe
 
-Labirynt reprezentowany jest w formie tekstowej. Parametry wejściowe:
-- `-h` - instrukcja pomocy
-- `-l [nazwa-pliku]` - plik z labiryntem do rozwiązania
-- `-f [nazwa-pliku]` - plik wyjściowy
-- `-d` - flaga wyświetlająca błędy na stdout
+Labirynt jest reprezentowany w formie tekstowej, gdzie:
+- `P` oznacza punkt wejścia,
+- `K` oznacza punkt wyjścia,
+- `X` oznacza ścianę labiryntu,
+- spacja oznacza miejsce, po którym można się poruszać.
 
----
+### Obsługa błędów
 
-## Obsługa błędów
+W przypadku błędów, informacje są zapisywane do pliku `log.txt`. Oto znaczenia kodów błędów:
 
-Błędy zapisywane są do pliku `log.txt`.
+- `11` - Zły format labiryntu
+- `12` - Błąd zapisu pliku wyjściowego
+- `13` - Niepoprawny parametr wejściowy
+
+Więcej informacji na temat kodów błędów znajdziesz w dokumentacji.
 
 ---
 
 ## Instrukcja HELP
 
-Aby uzyskać pomoc, wpisz: `./labsolver -h`.
+Aby uzyskać pomoc, wpisz:
+./labsolver -h
 
----
+
