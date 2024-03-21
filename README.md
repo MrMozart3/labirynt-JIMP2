@@ -17,8 +17,8 @@ Aby uruchomić program, należy postępować zgodnie z poniższymi krokami:
 
 Przykłady użycia:
 ```bash
-'./labsolver -l labirynt.txt -f rozwiazanie.txt'
-'./labsolver -l labirynt.txt -f rozwiazanie.txt -d'
+./labsolver -l labirynt.txt -f rozwiazanie.txt
+./labsolver -l labirynt.txt -f rozwiazanie.txt -d
 '''
 
 Więcej informacji na temat parametrów wejściowych znajdziesz w sekcji "Parametry wejściowe".
