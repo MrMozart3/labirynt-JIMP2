@@ -16,7 +16,7 @@ Aby uruchomić program, należy postępować zgodnie z poniższymi krokami:
 4. W terminalu wpisz: `./labsolver` z odpowiednimi parametrami.
 
 Przykłady użycia:
-```sh
+```bash
 './labsolver -l labirynt.txt -f rozwiazanie.txt'
 './labsolver -l labirynt.txt -f rozwiazanie.txt -d'
 '''
