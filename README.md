@@ -48,6 +48,7 @@ Więcej informacji na temat kodów błędów znajdziesz w dokumentacji.
 ## Instrukcja HELP
 
 Aby uzyskać pomoc, wpisz:
-'./labsolver -h'
-
+```bash
+./labsolver -h
+```
 
