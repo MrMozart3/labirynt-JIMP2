@@ -19,7 +19,7 @@ Przykłady użycia:
 ```sh
 './labsolver -l labirynt.txt -f rozwiazanie.txt'
 './labsolver -l labirynt.txt -f rozwiazanie.txt -d'
-
+'''
 
 Więcej informacji na temat parametrów wejściowych znajdziesz w sekcji "Parametry wejściowe".
 
