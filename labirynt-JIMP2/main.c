@@ -36,25 +36,26 @@ void PrintHelp()
 
 int main(int argc, char *argv[])
 {
-
+	//PrintHelp();
 	//
 	//			CONFIG
 	//
 	
 	MazeData* maze = malloc(sizeof(MazeData));
 	maze->recordSize = 15;
-	maze->chunkSize = 20;
+	maze->chunkSize = 3;
 	maze->chunksY = 0; maze->chunksX = 0;
-	maze->chunksCache = 3;
+	maze->chunksCache = 1;
 	maze->terminatorSize = 0;
 	maze->debugMode = 0;
-	char mazeFileName[100] =  "maze_200.txt";
+	char mazeFileName[100] =  "maze_3.txt";
 	char outputFileName[100] = "output.txt";
 
 	
 	//
 	//			ARGUMENTS
 	//
+
 	
 	int opt = 0;
 	while (( opt = getopt(argc, argv, "n:o:r:c:s:hd")) != -1)
@@ -139,6 +140,11 @@ int main(int argc, char *argv[])
 		return 1;			
 	}
 
+	//
+	//			CALCULATING
+	//
+
+
 
 	//
 	//			TXT TO CHUNKS
@@ -178,6 +184,7 @@ int main(int argc, char *argv[])
 	//
 
 	printf("\n\n");
+	//PrintMaze(maze);
 	free(maze);
 
 	ClearAllChunks(1000000, 1);
