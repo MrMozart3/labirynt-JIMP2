@@ -136,12 +136,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="file_handler.c" />
+    <ClCompile Include="getopt.c" />
     <ClCompile Include="instructions.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="solver.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file_handler.h" />
+    <ClInclude Include="getopt.h" />
     <ClInclude Include="instructions.h" />
     <ClInclude Include="solver.h" />
   </ItemGroup>

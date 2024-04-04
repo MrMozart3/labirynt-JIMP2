@@ -4,6 +4,8 @@
 #ifndef FILE_HANDLER
 #define FILE_HANDLER
 
+void GetDataFromFile();
+
 void PrintMaze(MazeData* maze);
 
 void AddNumberToText(char* text, int number);

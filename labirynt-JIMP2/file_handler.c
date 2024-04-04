@@ -5,6 +5,44 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdint.h>
+
+typedef struct {
+	int32_t file_id;
+	int8_t escape;
+	int16_t columns;
+	int16_t lines;
+	int16_t entry_x;
+	int16_t entry_y;
+	int16_t exit_x;
+	int16_t exit_y;
+	int64_t reserved_1;
+	int32_t reserved_2;
+	int32_t counter;
+	int32_t solution_offset;
+	int8_t separator;
+	int8_t wall;
+	int8_t path;
+} HeaderBin;
+
+void GetDataFromFile()
+{
+	FILE* in = fopen("maze.bin", "rb");
+	HeaderBin header;
+	fread(&header, 40, 1, in);
+	printf("File Id: 0x%X\n", header.file_id);
+	printf("Columns: %d\n", header.columns);
+	printf("Lines: %d\n", header.lines);
+	printf("Entry X: %d\n", header.entry_x);
+	printf("Entry Y: %d\n", header.entry_y);
+	printf("Exit X: %d\n", header.exit_x);
+	printf("Exit Y: %d\n", header.exit_y);
+	printf("Counter: %d\n", header.counter);
+	printf("Solution Offset: %d\n", header.solution_offset);
+	printf("Separator: %d\n", header.separator);
+	printf("Wall: %d\n", header.wall);
+	printf("Path: %d\n", header.path);
+}
 
 void PrintMaze(MazeData* maze) {
 	Tile* tile = malloc(sizeof(Tile));
@@ -154,6 +192,9 @@ void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 int VerifyFile(char* fileName, MazeData* maze)
 {
 	FILE* in = fopen(fileName, "rb");
+	if(in == NULL){
+		return 1;
+	}
 	int initialCounter = 0;
 
 	char c;

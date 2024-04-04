@@ -62,15 +62,22 @@ void FillWithDistances(MazeData* maze)
 	int modY[4] = { -1, 1, 0, 0 };
 	int modX[4] = { 0, 0, -1, 1 };
 	int distance = 1, currentChunk = -1;
-	//alloc
+	//alloc cache
+	int tempY = 0, tempX = 0;
 	Chunk* chunks = malloc(sizeof(Chunk) * maze->chunksCache);
 	for (int i = 0; i < maze->chunksCache; i++)
 	{
-		chunks[i].tiles = malloc(sizeof(Tile*) * maze->chunkSize);
+		chunks[tempY * maze->chunksX + tempX].tiles = malloc(sizeof(Tile*) * maze->chunkSize);
 		for (int j = 0; j < maze->chunkSize; j++)
 		{
-			chunks[i].tiles[j] = malloc(sizeof(Tile) * maze->chunkSize);
+			chunks[tempY * maze->chunksX + tempX].tiles[j] = malloc(sizeof(Tile) * maze->chunkSize);
 		}
+		tempX++;
+		if(tempX == maze->chunksX){
+			tempY++;
+			tempX = 0;
+		}
+
 	}
 	//load first 10
 	for (int i = 0; i < maze->chunksCache; i++) {
@@ -81,14 +88,6 @@ void FillWithDistances(MazeData* maze)
 	//
 	while (1)
 	{
-		//debug
-		/*
-		printf("%d - ", distance);
-		for (int i = 0; i < maze->chunksCache; i++) {
-			printf("%d ", chunks[i].chunkIndex);
-		}
-		printf("\n");*/
-		//
 		int repeatLoop = 0;
 		//move to index 0 actual chunk
 		currentChunk = GetChunkIndex(maze, y, x);
