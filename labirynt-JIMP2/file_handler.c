@@ -8,40 +8,84 @@
 #include <stdint.h>
 
 typedef struct {
-	int32_t file_id;
-	int8_t escape;
-	int16_t columns;
-	int16_t lines;
-	int16_t entry_x;
-	int16_t entry_y;
-	int16_t exit_x;
-	int16_t exit_y;
-	int64_t reserved_1;
-	int32_t reserved_2;
-	int32_t counter;
-	int32_t solution_offset;
-	int8_t separator;
-	int8_t wall;
-	int8_t path;
+	uint32_t file_id;
+	uint8_t escape;
+	uint16_t columns;
+	uint16_t lines;
+	uint16_t entry_x;
+	uint16_t entry_y;
+	uint16_t exit_x;
+	uint16_t exit_y;
+	uint64_t reserved_1;
+	uint32_t reserved_2;
+	uint32_t counter;
+	uint32_t solution_offset;
+	uint8_t separator;
+	uint8_t wall;
+	uint8_t path;
 } HeaderBin;
 
-void GetDataFromFile()
+void BinaryRead()
 {
 	FILE* in = fopen("maze.bin", "rb");
+	FILE* out = fopen("maze_test", "w");
 	HeaderBin header;
-	fread(&header, 40, 1, in);
-	printf("File Id: 0x%X\n", header.file_id);
-	printf("Columns: %d\n", header.columns);
-	printf("Lines: %d\n", header.lines);
-	printf("Entry X: %d\n", header.entry_x);
-	printf("Entry Y: %d\n", header.entry_y);
-	printf("Exit X: %d\n", header.exit_x);
-	printf("Exit Y: %d\n", header.exit_y);
-	printf("Counter: %d\n", header.counter);
-	printf("Solution Offset: %d\n", header.solution_offset);
-	printf("Separator: %d\n", header.separator);
-	printf("Wall: %d\n", header.wall);
-	printf("Path: %d\n", header.path);
+	fread(&header.file_id, 4, 1, in);
+	fread(&header.escape, 1, 1, in);
+	fread(&header.columns, 2, 1, in);
+	fread(&header.lines, 2, 1, in);
+	fread(&header.entry_x, 2, 1, in);
+	fread(&header.entry_y, 2, 1, in);
+	fread(&header.exit_x, 2, 1, in);
+	fread(&header.exit_y, 2, 1, in);
+	fread(&header.reserved_1, 8, 1, in);
+	fread(&header.reserved_2, 4, 1, in);
+	fread(&header.counter, 4, 1, in);
+	fread(&header.solution_offset, 4, 1, in);
+	fread(&header.separator, 1, 1, in);
+	fread(&header.wall, 1, 1, in);
+	fread(&header.path, 1, 1, in);
+
+	header.columns -= 1;
+	header.lines -= 1;
+	header.entry_x -= 1;
+	header.entry_y -= 1;
+	header.exit_x -= 1;
+	header.exit_y -= 1;
+
+	printf("File ID: 0x%X\n", header.file_id);
+	printf("Columns: %u\n", header.columns);
+	printf("Lines: %u\n", header.lines);
+	printf("Entry X: %u\n", header.entry_x);
+	printf("Entry Y: %u\n", header.entry_y);
+	printf("Exit X: %u\n", header.exit_x);
+	printf("Exit Y: %u\n", header.exit_y);
+	printf("Counter: %u\n", header.counter);
+	printf("Solution Offset: %u\n", header.solution_offset);
+	printf("Separator: %u\n", header.separator);
+	printf("Wall: %u\n", header.wall);
+	printf("Path: %u\n", header.path);
+
+	int y = 0, x = 0;
+	for (int i = 0; i < &header.counter; i++) {
+		if (x == header.columns) {
+			x = 0;
+			y++;
+			printf("\n\n");
+		}
+		uint8_t s;
+		uint8_t v;
+		uint8_t c;
+		fread(&s, 1, 1, in);
+		fread(&v, 1, 1, in);
+		fread(&c, 1, 1, in);
+
+		x += c + 1;
+
+		printf("%d %d %d\n", v, c, x);
+	}
+			
+
 }
 
 void PrintMaze(MazeData* maze) {

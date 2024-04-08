@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="maze_10_2.txt" />
+    <Text Include="maze_3.txt" />
     <Text Include="maze_512.txt" />
     <Text Include="maze_1000.txt" />
     <Text Include="maze_10.txt" />
