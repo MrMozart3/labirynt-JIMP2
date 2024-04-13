@@ -55,7 +55,6 @@ void SwapValues(MazeData *maze, Chunk *first, Chunk *second)
 		}
 	}
 }
-
 void FillWithDistances(MazeData* maze)
 {
 	int y = maze->end[0], x = maze->end[1];

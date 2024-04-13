@@ -13,6 +13,7 @@ typedef struct MazeDataStruct {
 	int chunkSize;
 	int terminatorSize;
 	int debugMode;
+	int t;
 }MazeData;
 
 typedef struct TileStruct {

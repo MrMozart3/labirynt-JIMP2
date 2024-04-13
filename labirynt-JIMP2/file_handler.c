@@ -25,10 +25,10 @@ typedef struct {
 	uint8_t path;
 } HeaderBin;
 
-void BinaryRead()
+void BinaryRead(char *fileName, char *outFileName, MazeData *maze)
 {
-	FILE* in = fopen("maze.bin", "rb");
-	FILE* out = fopen("maze_test", "w");
+	FILE* in = fopen(fileName, "rb");
+	FILE* out = fopen(outFileName, "w");
 	HeaderBin header;
 	fread(&header.file_id, 4, 1, in);
 	fread(&header.escape, 1, 1, in);
@@ -46,13 +46,13 @@ void BinaryRead()
 	fread(&header.wall, 1, 1, in);
 	fread(&header.path, 1, 1, in);
 
-	header.columns -= 1;
-	header.lines -= 1;
-	header.entry_x -= 1;
-	header.entry_y -= 1;
-	header.exit_x -= 1;
-	header.exit_y -= 1;
-
+	maze->sizeX = (header.columns - 1) / 2;
+	maze->sizeY = (header.lines - 1) / 2;
+	maze->start[0] = header.entry_y == header.lines ? (header.entry_y - 2) / 2 : (header.entry_y - 1) / 2;
+	maze->start[1] = header.entry_x == header.columns ? (header.entry_x - 2) / 2 : (header.entry_x - 1) / 2;
+	maze->end[0] = header.exit_y == header.lines ? (header.exit_y - 2) / 2 : (header.exit_y - 1) / 2;
+	maze->end[1] = header.exit_x == header.columns ? (header.exit_x - 2) / 2 : (header.exit_x - 1) / 2;
+	/*
 	printf("File ID: 0x%X\n", header.file_id);
 	printf("Columns: %u\n", header.columns);
 	printf("Lines: %u\n", header.lines);
@@ -65,14 +65,10 @@ void BinaryRead()
 	printf("Separator: %u\n", header.separator);
 	printf("Wall: %u\n", header.wall);
 	printf("Path: %u\n", header.path);
-
+	*/
 	int y = 0, x = 0;
-	for (int i = 0; i < &header.counter; i++) {
-		if (x == header.columns) {
-			x = 0;
-			y++;
-			printf("\n\n");
-		}
+	char* line = malloc(sizeof(char) * (header.columns + 2));
+	for (int i = 0; i < header.counter; i++) {
 		uint8_t s;
 		uint8_t v;
 		uint8_t c;
@@ -80,12 +76,29 @@ void BinaryRead()
 		fread(&v, 1, 1, in);
 		fread(&c, 1, 1, in);
 
-		x += c + 1;
+		
 
-		printf("%d %d %d\n", v, c, x);
+		for (int i = 0; i < c + 1; i++) {
+			if (v == header.wall) {
+				line[x] = 'X';
+			}
+			else if (v == header.path) {
+				line[x] = ' ';
+			}
+			x++;
+		}
+		if (x == header.columns) {
+			line[x] = '\n';
+			line[x + 1] = '\0';
+			x = 0;
+			y++;
+			fprintf(out, line);
+		}
 	}
-			
+	free(line);
 
+	fclose(in);
+	fclose(out);
 }
 
 void PrintMaze(MazeData* maze) {

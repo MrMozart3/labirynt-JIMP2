@@ -4,7 +4,7 @@
 #ifndef FILE_HANDLER
 #define FILE_HANDLER
 
-void BinaryRead();
+void BinaryRead(char* fileName, char* outFileName, MazeData* maze);
 
 void PrintMaze(MazeData* maze);
 
