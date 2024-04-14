@@ -5,8 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-void GenerateBinaryInstructons(MazeData* maze, FILE* out) {
+#include <stdint.h>
+ 
+uint32_t GenerateBinaryInstructons(MazeData* maze, FILE* out) {
 	int y = maze->start[0], x = maze->start[1];
 	int modY[4] = { -1, 1, 0, 0 };
 	int modX[4] = { 0, 0, -1, 1 };
@@ -20,11 +21,21 @@ void GenerateBinaryInstructons(MazeData* maze, FILE* out) {
 			chunk[k].tiles[i] = malloc(sizeof(Tile) * maze->chunkSize);
 		}
 	}
+
+	uint32_t stepsCounter = 0;
+
+
 	int currentChunk = -1;
 
 	int currentDir = -1;
+	int lastDir = -1;
+	int currentStreak = 1;
 
 	int repeatLoop = 0;
+
+	uint32_t tempValue = 0;
+	fwrite(&tempValue, 4, 1, out);
+
 	while (1) {
 		repeatLoop = 0;
 		if (GetChunkIndex(maze, y, x) != currentChunk)
@@ -34,7 +45,7 @@ void GenerateBinaryInstructons(MazeData* maze, FILE* out) {
 			if (distance == -1) {
 				distance = chunk[0].tiles[y % maze->chunkSize][x % maze->chunkSize].dist;
 			}
-			//printf("%d\n", currentChunk);
+			
 		}
 		for (int i = 0; i < 4; i++)
 		{
@@ -64,23 +75,60 @@ void GenerateBinaryInstructons(MazeData* maze, FILE* out) {
 			}
 		}
 		if (repeatLoop == 1){
-			if (currentDir == 0) {
-				printf("%c", 'N');
-			}
-			else if (currentDir == 1) {
-				printf("%c", 'S');
-			}
-			else if (currentDir == 2) {
-				printf("%c", 'W');
-			}
-			else if (currentDir == 3) {
-				printf("%c", 'E');
+			if (lastDir == -1) {
+				lastDir = currentDir;
+				continue;
 			}
 
+			if (lastDir == currentDir) {
+				currentStreak++;
+			}
+			else {
+				char printDir;
+				if (lastDir == 0) {
+					printDir = 'N';
+				}
+				else if (lastDir == 1) {
+					printDir = 'S';
+				}
+				else if (lastDir == 2) {
+					printDir = 'W';
+				}
+				else if (lastDir == 3) {
+					printDir = 'E';
+				}
+				uint8_t temp = (int)currentStreak;
+				fwrite(&printDir, 1, 1, out);
+				fwrite(&temp, 1, 1, out);
+
+				stepsCounter++;
+
+				lastDir = currentDir;
+				currentStreak = 1;
+			}
+			
 			continue;
 		}
 		break;
 	}
+	char printDir;
+	if (lastDir == 0) {
+		printDir = 'N';
+	}
+	else if (lastDir == 1) {
+		printDir = 'S';
+	}
+	else if (lastDir == 2) {
+		printDir = 'W';
+	}
+	else if (lastDir == 3) {
+		printDir = 'E';
+	}
+	uint8_t temp = (int)currentStreak;
+	fwrite(&printDir, 1, 1, out);
+	fwrite(&temp, 1, 1, out);
+	
+	return stepsCounter;
 }
 
 void GenerateInstructions(MazeData* maze, FILE* out)
@@ -115,6 +163,7 @@ void GenerateInstructions(MazeData* maze, FILE* out)
 			if (distance == -1) {
 				distance = chunk[0].tiles[y % maze->chunkSize][x % maze->chunkSize].dist;
 			}
+
 			//printf("%d\n", currentChunk);
 		}
 		for (int i = 0; i < 4; i++)

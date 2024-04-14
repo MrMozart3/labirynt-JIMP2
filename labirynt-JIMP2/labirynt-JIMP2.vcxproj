@@ -148,6 +148,9 @@
     <ClInclude Include="instructions.h" />
     <ClInclude Include="solver.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="maze.bin" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

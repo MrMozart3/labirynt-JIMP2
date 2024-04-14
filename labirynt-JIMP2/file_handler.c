@@ -52,20 +52,23 @@ void BinaryRead(char *fileName, char *outFileName, MazeData *maze)
 	maze->start[1] = header.entry_x == header.columns ? (header.entry_x - 2) / 2 : (header.entry_x - 1) / 2;
 	maze->end[0] = header.exit_y == header.lines ? (header.exit_y - 2) / 2 : (header.exit_y - 1) / 2;
 	maze->end[1] = header.exit_x == header.columns ? (header.exit_x - 2) / 2 : (header.exit_x - 1) / 2;
-	/*
-	printf("File ID: 0x%X\n", header.file_id);
-	printf("Columns: %u\n", header.columns);
-	printf("Lines: %u\n", header.lines);
-	printf("Entry X: %u\n", header.entry_x);
-	printf("Entry Y: %u\n", header.entry_y);
-	printf("Exit X: %u\n", header.exit_x);
-	printf("Exit Y: %u\n", header.exit_y);
-	printf("Counter: %u\n", header.counter);
-	printf("Solution Offset: %u\n", header.solution_offset);
-	printf("Separator: %u\n", header.separator);
-	printf("Wall: %u\n", header.wall);
-	printf("Path: %u\n", header.path);
-	*/
+	if (maze->debugMode == 1) {
+		printf("File ID: 0x%X\n", header.file_id);
+		printf("Columns: %u\n", header.columns);
+		printf("Lines: %u\n", header.lines);
+		printf("Entry X: %u\n", header.entry_x);
+		printf("Entry Y: %u\n", header.entry_y);
+		printf("Exit X: %u\n", header.exit_x);
+		printf("Exit Y: %u\n", header.exit_y);
+		printf("Counter: %u\n", header.counter);
+		printf("Solution Offset: %u\n", header.solution_offset);
+		printf("Separator: %u\n", header.separator);
+		printf("Wall: %u\n", header.wall);
+		printf("Path: %u\n", header.path);
+	}
+
+	maze->counter = header.counter;
+	
 	int y = 0, x = 0;
 	char* line = malloc(sizeof(char) * (header.columns + 2));
 	for (int i = 0; i < header.counter; i++) {
@@ -158,9 +161,9 @@ void AddNumberToText(char* text, int number)
 	return;
 }
 
-void ClearAllChunks(int max, int StopAfterError)
+void ClearAllChunks(int max, int StopAfterError, int showMessage)
 {
-	printf("Removing Data, successfully removed:\n");
+	if(showMessage == 1) printf("Removing Data, successfully removed:\n");
 	int count = 0;
 	for (int i = 0; i <= max; i++) {
 		char fileName[30] = "chunk_";
@@ -172,7 +175,7 @@ void ClearAllChunks(int max, int StopAfterError)
 			break;
 		}
 	}
-	printf("Removed %d files\n\n", count);
+	if (showMessage == 1) printf("Removed %d files\n\n", count);
 	return;
 }
 
@@ -275,7 +278,7 @@ int VerifyFile(char* fileName, MazeData* maze)
 	}
 
 	maze->sizeX = (initialCounter - 1) / 2;
-	maze->chunksX = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
+	
 
 	int tempX = 0;
 	int tempY = 0;
@@ -308,7 +311,12 @@ int VerifyFile(char* fileName, MazeData* maze)
 	}
 
 	maze->sizeY = (tempY - 1) / 2;
+
+	if (maze->chunkSize == -1 && maze->chunksCache == -1) {
+		OptimalValues(maze);
+	}
 	maze->chunksY = maze->sizeY % maze->chunkSize == 0 ? maze->sizeY / maze->chunkSize : maze->sizeY / maze->chunkSize + 1;
+	maze->chunksX = maze->sizeX % maze->chunkSize == 0 ? maze->sizeX / maze->chunkSize : maze->sizeX / maze->chunkSize + 1;
 
 	//start-end
 	maze->start[0] = 0; maze->start[1] = 0;

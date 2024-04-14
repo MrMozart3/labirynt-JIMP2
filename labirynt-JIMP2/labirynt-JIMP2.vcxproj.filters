@@ -36,6 +36,7 @@
     <Text Include="maze_10_2.txt">
       <Filter>Pliki zasobów\mazes</Filter>
     </Text>
+    <Text Include="maze_3.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="file_handler.c">
@@ -67,5 +68,10 @@
     <ClInclude Include="getopt.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="maze.bin">
+      <Filter>Pliki zasobów\mazes</Filter>
+    </None>
   </ItemGroup>
 </Project>

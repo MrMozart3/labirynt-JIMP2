@@ -14,7 +14,8 @@ typedef struct MazeDataStruct {
 	int terminatorSize;
 	int debugMode;
 	int t;
-}MazeData;
+	int counter;
+} MazeData;
 
 typedef struct TileStruct {
 	char walls[5];

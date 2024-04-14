@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdint.h>
 void PrintMazeData(MazeData *maze, char *inputFileName, char *outputFileName) {
 	printf("Tryb: %d\n", maze->t);
 	printf("Plik wejsciowy/wyjsciowy: %s/%s\n", inputFileName, outputFileName);
@@ -14,6 +15,7 @@ void PrintMazeData(MazeData *maze, char *inputFileName, char *outputFileName) {
 	printf("Poczatek y:%d  x:%d\n", maze->start[0], maze->start[1]);
 	printf("Koniec y:%d  x:%d\n", maze->end[0], maze->end[1]);
 	printf("Smallest Chunk y:%d  x:%d\n", maze->minInChunkY, maze->minInChunkX);
+	printf("ChunkSize: %d\n", maze->chunkSize);
 	printf("Cache: %d\n", maze->chunksCache);
 	printf("Record Size: %d\n", maze->recordSize);
 	printf("Terminator size: %d\n", maze->terminatorSize);
@@ -42,8 +44,7 @@ void PrintHelp()
 	
 	printf("-c <rozmiar cache> (niewymagany)\n");
 	printf("Liczba chunkow przechowywana w pamieci programu\nIm wiecej, tym wieksze zuzycie pamieci RAM\n");
-	printf("Warunki: c <= liczba chunkow w labiryncie\n\n");
-	
+	printf("Warunki: 2 <= c <= liczba chunkow w labiryncie\n\n");
 	
 	printf("-r <rozmiar rekordu> (niewymagany)\n");
 	printf("Definiuje rozmiar jednego rekordu w pliku\nIm wiecej, tym wieksze zapelnienie dysku podczas dzialania programu\n");
@@ -51,6 +52,30 @@ void PrintHelp()
 	
 	printf("-d (niewymagany)\n");
 	printf("Uruchamia program w trybie debug mode\n\n");
+}
+
+void OptimalValues(MazeData* maze) {
+	int shorterSize = maze->sizeX < maze->sizeY ? maze->sizeX : maze->sizeY;
+	if (shorterSize < 10) {
+		maze->chunkSize = 2;
+		maze->chunksCache = 3;
+	}
+	else if (shorterSize < 100) {
+		maze->chunkSize = 10;
+		maze->chunksCache = 4;
+	}
+	else if (shorterSize < 500) {
+		maze->chunkSize = 15;
+		maze->chunksCache = 5;
+	}
+	else if (shorterSize < 1000) {
+		maze->chunkSize = 20;
+		maze->chunksCache = 6;
+	}
+	else {
+		maze->chunkSize = 25;
+		maze->chunksCache = 7;
+	}
 }
 
 int main(int argc, char *argv[])
@@ -61,14 +86,15 @@ int main(int argc, char *argv[])
 	
 	MazeData* maze = malloc(sizeof(MazeData));
 	maze->recordSize = 15;
-	maze->chunkSize = 50;
+	maze->chunkSize = -1;
 	maze->chunksY = 0; maze->chunksX = 0;
-	maze->chunksCache = 5;
+	maze->chunksCache = 3;
 	maze->terminatorSize = 0;
 	maze->debugMode = 1;
-	maze->t = 1;
+	maze->t = 2;
+	//0 - text to text		1 - binary to binary	2 - binary to text
 	char mazeFileName[100] =  "maze.bin"; //"\0"
-	char outputFileName[100] = "\0";
+	char outputFileName[100] = "output.txt\0";
 
 	
 	//
@@ -168,15 +194,15 @@ int main(int argc, char *argv[])
 		printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
 		return 1;
 	}
-	if (maze->chunksCache > maze->chunksX * maze->chunksY) {
-		printf("Zbyt duzy cache -> wiekszy od ilosci chunkow ( -c )\n");
+	if (maze->chunkSize == -1 && maze->chunksCache != -1 || maze->chunkSize != -1 && maze->chunksCache == -1) {
+		printf("W przypadku ustalenie wartosci rozmiaru chunku lub rozmiaru cache\nnalezy ustalic obie na raz (lub zadnej)\n");
 		printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
 		return 1;
 	}
 	
 
 	if (maze->t == 0) {
-		ClearAllChunks(10000000, 1);
+		ClearAllChunks(10000000, 1, maze->debugMode);
 		//verify text file
 		clock_t start0 = clock();
 		int ver = VerifyFile(mazeFileName, maze);
@@ -185,37 +211,61 @@ int main(int argc, char *argv[])
 			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
 			return 1;
 		}
+		if (maze->chunkSize == -1 && maze->chunksCache == -1) {
+			OptimalValues(maze);
+		}
+		if (maze->chunksCache > maze->chunksX * maze->chunksY) {
+			printf("Zbyt duzy cache -> wiekszy od ilosci chunkow ( -c )\n");
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
+		if (maze->debugMode == 1) {
+			printf("Maze Data:\n");
+			PrintMazeData(maze, mazeFileName, outputFileName);
+		}
 		clock_t end0 = clock();
-		printf("Time Taken Verify Maze:%f\n\n", ((double)(end0 - start0)) / CLOCKS_PER_SEC);
+		if (maze->debugMode == 1) printf("Time Taken Verify Maze:%f\n", ((double)(end0 - start0)) / CLOCKS_PER_SEC);
 		//save to chunks from text file
 		clock_t start1 = clock();
 		SaveMazeToChunks(mazeFileName, maze, 1000000);
 		clock_t end1 = clock();
-		printf("Time Taken To Load Maze:%f\n\n", ((double)(end1 - start1)) / CLOCKS_PER_SEC);
+		if (maze->debugMode == 1) printf("Time Taken To Load Maze:%f\n", ((double)(end1 - start1)) / CLOCKS_PER_SEC);
 		//fill with distances
 		clock_t start2 = clock();
 		FillWithDistances(maze);
 		clock_t end2 = clock();
-		printf("Time Taken To Fill Maze:%f\n\n", ((double)(end2 - start2)) / CLOCKS_PER_SEC);
+		if (maze->debugMode == 1) printf("Time Taken To Fill Maze:%f\n", ((double)(end2 - start2)) / CLOCKS_PER_SEC);
 		//generate instructions to text file
 		FILE* out = fopen(outputFileName, "w");
 		clock_t start3 = clock();
 		GenerateInstructions(maze, out);
 		clock_t end3 = clock();
-		printf("Time Taken To Print Maze:%f\n\n", ((double)(end3 - start3)) / CLOCKS_PER_SEC);
+		if (maze->debugMode == 1) printf("Time Taken To Generate Instructions:%f\n\n", ((double)(end3 - start3)) / CLOCKS_PER_SEC);
 		fclose(out);
 	}
 	else if (maze->t == 1) {
-		ClearAllChunks(10000000, 1);
+		ClearAllChunks(10000000, 1, maze->debugMode);
 		//Read From BInary FIle
 		char tempFileName[100] = "maze_temp_file.txt";
+		if (maze->debugMode == 1) printf("Reading data from binary file: %s\n", mazeFileName);
 		clock_t start0 = clock();
 		BinaryRead(mazeFileName, tempFileName, maze);
 		clock_t end0 = clock();
 		//Verify File
 		clock_t start00 = clock();
 		VerifyFile(tempFileName, maze);
+		if (maze->chunksCache > maze->chunksX * maze->chunksY) {
+			printf("Zbyt duzy cache -> wiekszy od ilosci chunkow ( -c )\n");
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
+		if (maze->chunkSize < 2) {
+			printf("Zbyt maly cache, minimalny rozmiar to 2\n");
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
 		if (maze->debugMode == 1) {
+			printf("\nMaze Data:\n");
 			PrintMazeData(maze, mazeFileName, mazeFileName);
 		}
 		clock_t end00 = clock();
@@ -230,43 +280,74 @@ int main(int argc, char *argv[])
 		clock_t start2 = clock();
 		FillWithDistances(maze);
 		clock_t end2 = clock();
-		if(maze->debugMode == 1) printf("Time Taken To Fill Maze:%f\n\n", ((double)(end2 - start2)) / CLOCKS_PER_SEC);
+		if(maze->debugMode == 1) printf("Time Taken To Fill Maze:%f\n", ((double)(end2 - start2)) / CLOCKS_PER_SEC);
 		//generate instructions to BINARY FILE
-		GenerateBinaryInstructons(maze, NULL);
+		FILE* out = fopen(mazeFileName, "a+b");
+		clock_t start3 = clock();
+		uint32_t resultInstructions = (uint32_t)GenerateBinaryInstructons(maze, out);
+		clock_t end3 = clock();
+
+		fclose(out);
+		out = fopen(mazeFileName, "r+b");
+
+		fseek(out, maze->counter * 3 + 40 + 4, SEEK_SET);
+		fwrite(&resultInstructions, 4, 1, out);
+		if (maze->debugMode == 1) printf("Time Taken To Generate Output:%f\n\n", ((double)(end3 - start3)) / CLOCKS_PER_SEC);
+		printf("Maze Solved\n");
+		fclose(out);
+		remove(tempFileName);
 	}
-
-	//
-	//			CALCULATING
-	//
-
-
-
-	//
-	//			TXT TO CHUNKS
-	//
+	else if (maze->t == 2) {
+		ClearAllChunks(10000000, 1, maze->debugMode);
+		//Read From BInary FIle
+		char tempFileName[100] = "maze_temp_file.txt";
+		if (maze->debugMode == 1) printf("Reading data from binary file: %s\n", mazeFileName);
+		clock_t start0 = clock();
+		BinaryRead(mazeFileName, tempFileName, maze);
+		clock_t end0 = clock();
+		//Verify File
+		clock_t start00 = clock();
+		VerifyFile(tempFileName, maze);
+		if (maze->chunksCache > maze->chunksX * maze->chunksY) {
+			printf("Zbyt duzy cache -> wiekszy od ilosci chunkow ( -c )\n");
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
+		if (maze->chunkSize < 2) {
+			printf("Zbyt maly cache, minimalny rozmiar to 2\n");
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
+		if (maze->debugMode == 1) {
+			printf("\nMaze Data:\n");
+			PrintMazeData(maze, mazeFileName, outputFileName);
+		}
+		clock_t end00 = clock();
+		if (maze->debugMode == 1) printf("Time Taken To Load BInary: %f\n", ((double)(end0 - start0)) / CLOCKS_PER_SEC);
+		if (maze->debugMode == 1) printf("Time Taken To Verify Maze: %f\n", ((double)(end00 - start00)) / CLOCKS_PER_SEC);
+		//saving to chunks from TEMP text file
+		clock_t start1 = clock();
+		SaveMazeToChunks(tempFileName, maze, 1000000);
+		clock_t end1 = clock();
+		if (maze->debugMode == 1) printf("Time Taken To Load Maze:%f\n", ((double)(end1 - start1)) / CLOCKS_PER_SEC);
+		//fill with distances
+		clock_t start2 = clock();
+		FillWithDistances(maze);
+		clock_t end2 = clock();
+		if (maze->debugMode == 1) printf("Time Taken To Fill Maze:%f\n", ((double)(end2 - start2)) / CLOCKS_PER_SEC);
+		//generate instructions to text file
+		FILE* out = fopen(outputFileName, "w");
+		clock_t start3 = clock();
+		GenerateInstructions(maze, out);
+		clock_t end3 = clock();
+		if (maze->debugMode == 1) printf("Time Taken To Generate Instructions:%f\n\n", ((double)(end3 - start3)) / CLOCKS_PER_SEC);
+		fclose(out);
+		remove(tempFileName);
+	}
+	ClearAllChunks(1000000, 1, maze->debugMode);
 	
-	
-	//
-	//			FILLING WITH DISTANCE
-	//
 
-	//
-	//			PRINTING
-	//
-
-	//PrintMaze(maze);
-
-	
-
-	//
-	//			TESTING
-	//
-
-	printf("\n\n");
-	//PrintMaze(maze);
 	free(maze);
-
-	ClearAllChunks(1000000, 0);
 
 	return 0;
 }
