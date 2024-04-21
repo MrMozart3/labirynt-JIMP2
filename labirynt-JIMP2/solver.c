@@ -163,7 +163,6 @@ void FillWithDistances(MazeData* maze)
 		for (int i = 0; i < maze->chunksCache; i++) {
 			UpdateChunk(maze, &chunks[i]);
 		}
-		//for (int i = 0; i < maze->chunksCache; i++) printf("%d ", lastChunks[i].chunkIndex);
 
 		break;
 	}

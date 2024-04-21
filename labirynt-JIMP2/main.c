@@ -54,30 +54,6 @@ void PrintHelp()
 	printf("Uruchamia program w trybie debug mode\n\n");
 }
 
-void OptimalValues(MazeData* maze) {
-	int shorterSize = maze->sizeX < maze->sizeY ? maze->sizeX : maze->sizeY;
-	if (shorterSize < 10) {
-		maze->chunkSize = 2;
-		maze->chunksCache = 3;
-	}
-	else if (shorterSize < 100) {
-		maze->chunkSize = 10;
-		maze->chunksCache = 4;
-	}
-	else if (shorterSize < 500) {
-		maze->chunkSize = 15;
-		maze->chunksCache = 5;
-	}
-	else if (shorterSize < 1000) {
-		maze->chunkSize = 20;
-		maze->chunksCache = 6;
-	}
-	else {
-		maze->chunkSize = 25;
-		maze->chunksCache = 7;
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	//
@@ -88,13 +64,13 @@ int main(int argc, char *argv[])
 	maze->recordSize = 15;
 	maze->chunkSize = -1;
 	maze->chunksY = 0; maze->chunksX = 0;
-	maze->chunksCache = 3;
+	maze->chunksCache = -1;
 	maze->terminatorSize = 0;
-	maze->debugMode = 1;
-	maze->t = 2;
+	maze->debugMode = 0;
+	maze->t = -1;
 	//0 - text to text		1 - binary to binary	2 - binary to text
-	char mazeFileName[100] =  "maze.bin"; //"\0"
-	char outputFileName[100] = "output.txt\0";
+	char mazeFileName[100] = "\0";
+	char outputFileName[100] = "\0";
 
 	
 	//
@@ -173,7 +149,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (maze->t != 0 && maze->t != 1 && maze->t != 2) {
-		printf("Brak flagi -t");
+		printf("Brak flagi -t\n");
 		printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
 		return 1;
 	}
@@ -190,7 +166,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	else if (outputFileName[0] == '\0') {
-		printf("Podaj nazwe pliku wyjsciowego");
+		printf("Podaj nazwe pliku wyjsciowego\n");
 		printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
 		return 1;
 	}
@@ -210,9 +186,6 @@ int main(int argc, char *argv[])
 			printf("Problem z otwarciem pliku %s\n", mazeFileName);
 			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
 			return 1;
-		}
-		if (maze->chunkSize == -1 && maze->chunksCache == -1) {
-			OptimalValues(maze);
 		}
 		if (maze->chunksCache > maze->chunksX * maze->chunksY) {
 			printf("Zbyt duzy cache -> wiekszy od ilosci chunkow ( -c )\n");
@@ -238,10 +211,11 @@ int main(int argc, char *argv[])
 		//generate instructions to text file
 		FILE* out = fopen(outputFileName, "w");
 		clock_t start3 = clock();
-		GenerateInstructions(maze, out);
+		int resultInstructions = GenerateInstructions(maze, out);
 		clock_t end3 = clock();
 		if (maze->debugMode == 1) printf("Time Taken To Generate Instructions:%f\n\n", ((double)(end3 - start3)) / CLOCKS_PER_SEC);
 		fclose(out);
+		printf("Maze Solved in %d instructions\n\n", (int)resultInstructions);
 	}
 	else if (maze->t == 1) {
 		ClearAllChunks(10000000, 1, maze->debugMode);
@@ -249,11 +223,21 @@ int main(int argc, char *argv[])
 		char tempFileName[100] = "maze_temp_file.txt";
 		if (maze->debugMode == 1) printf("Reading data from binary file: %s\n", mazeFileName);
 		clock_t start0 = clock();
-		BinaryRead(mazeFileName, tempFileName, maze);
+		int bin = BinaryRead(mazeFileName, tempFileName, maze);
+		if (bin == -1) {
+			printf("Problem z otwarciem pliku %s\n", mazeFileName);
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
 		clock_t end0 = clock();
 		//Verify File
 		clock_t start00 = clock();
-		VerifyFile(tempFileName, maze);
+		int ver = VerifyFile(tempFileName, maze);
+		if (ver == 1) {
+			printf("Problem z otwarciem pliku %s\n", mazeFileName);
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
 		if (maze->chunksCache > maze->chunksX * maze->chunksY) {
 			printf("Zbyt duzy cache -> wiekszy od ilosci chunkow ( -c )\n");
 			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
@@ -293,7 +277,7 @@ int main(int argc, char *argv[])
 		fseek(out, maze->counter * 3 + 40 + 4, SEEK_SET);
 		fwrite(&resultInstructions, 4, 1, out);
 		if (maze->debugMode == 1) printf("Time Taken To Generate Output:%f\n\n", ((double)(end3 - start3)) / CLOCKS_PER_SEC);
-		printf("Maze Solved\n");
+		printf("Maze Solved in %d steps\n\n", (int)resultInstructions + 1);
 		fclose(out);
 		remove(tempFileName);
 	}
@@ -303,7 +287,12 @@ int main(int argc, char *argv[])
 		char tempFileName[100] = "maze_temp_file.txt";
 		if (maze->debugMode == 1) printf("Reading data from binary file: %s\n", mazeFileName);
 		clock_t start0 = clock();
-		BinaryRead(mazeFileName, tempFileName, maze);
+		int bin = BinaryRead(mazeFileName, tempFileName, maze);
+		if (bin == -1) {
+			printf("Problem z otwarciem pliku %s\n", mazeFileName);
+			printf("Po instrukcje uzyj:\n%s -h\n", argv[0]);
+			return 1;
+		}
 		clock_t end0 = clock();
 		//Verify File
 		clock_t start00 = clock();
@@ -338,11 +327,13 @@ int main(int argc, char *argv[])
 		//generate instructions to text file
 		FILE* out = fopen(outputFileName, "w");
 		clock_t start3 = clock();
-		GenerateInstructions(maze, out);
+		int resultInstructions = GenerateInstructions(maze, out);
 		clock_t end3 = clock();
 		if (maze->debugMode == 1) printf("Time Taken To Generate Instructions:%f\n\n", ((double)(end3 - start3)) / CLOCKS_PER_SEC);
+		printf("Maze Solved in %d instructions\n\n", (int)resultInstructions + 1);
 		fclose(out);
 		remove(tempFileName);
+		
 	}
 	ClearAllChunks(1000000, 1, maze->debugMode);
 	

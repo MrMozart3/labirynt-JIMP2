@@ -25,10 +25,37 @@ typedef struct {
 	uint8_t path;
 } HeaderBin;
 
-void BinaryRead(char *fileName, char *outFileName, MazeData *maze)
+void OptimalValues(MazeData* maze) {
+	int shorterSize = maze->sizeX < maze->sizeY ? maze->sizeX : maze->sizeY;
+	if (shorterSize < 10) {
+		maze->chunkSize = 2;
+		maze->chunksCache = 2;
+	}
+	else if (shorterSize < 100) {
+		maze->chunkSize = 5;
+		maze->chunksCache = 3;
+	}
+	else if (shorterSize < 500) {
+		maze->chunkSize = 15;
+		maze->chunksCache = 5;
+	}
+	else if (shorterSize < 1000) {
+		maze->chunkSize = 20;
+		maze->chunksCache = 6;
+	}
+	else {
+		maze->chunkSize = 25;
+		maze->chunksCache = 7;
+	}
+}
+
+int BinaryRead(char *fileName, char *outFileName, MazeData *maze)
 {
 	FILE* in = fopen(fileName, "rb");
 	FILE* out = fopen(outFileName, "w");
+	if (in == NULL || out == NULL) {
+		return -1;
+	}
 	HeaderBin header;
 	fread(&header.file_id, 4, 1, in);
 	fread(&header.escape, 1, 1, in);
@@ -95,13 +122,14 @@ void BinaryRead(char *fileName, char *outFileName, MazeData *maze)
 			line[x + 1] = '\0';
 			x = 0;
 			y++;
-			fprintf(out, line);
+			fprintf(out, "%s", line);
 		}
 	}
 	free(line);
 
 	fclose(in);
 	fclose(out);
+	return 0;
 }
 
 void PrintMaze(MazeData* maze) {
@@ -182,7 +210,7 @@ void ClearAllChunks(int max, int StopAfterError, int showMessage)
 void UpdateChunk(MazeData *maze, Chunk *chunk)
 {
 	int horizontalNumber = chunk->chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
-	int verticalNumber = chunk->chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
+	int verticalNumber = chunk->chunkIndex / maze->chunksX == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
 
 	char fileName[30] = "chunk_";
 	AddNumberToText(fileName, chunk->chunkIndex);
@@ -218,12 +246,11 @@ void UpdateChunk(MazeData *maze, Chunk *chunk)
 	free(data);
 }
 
-//najlepiej to usunac gowno jebane
 void LoadTile(MazeData* maze, Tile* tile, int y, int x)
 {
 	int chunkIndex = GetChunkIndex(maze, y, x);
 	int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
-	int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
+	int verticalNumber = chunkIndex / maze->chunksX == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
 
 	char fileName[30] = "chunk_";
 	AddNumberToText(fileName, chunkIndex);
@@ -323,9 +350,8 @@ int VerifyFile(char* fileName, MazeData* maze)
 	maze->end[0] = maze->sizeY - 1; maze->end[1] = maze->sizeX - 1;
 
 	//mins
-	maze->minInChunkY = maze->sizeX % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeX - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
-	maze->minInChunkX = maze->sizeY % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeY - (maze->sizeY / maze->chunkSize) * maze->chunkSize;
-
+	maze->minInChunkY = maze->sizeY % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeY % maze->chunkSize;
+	maze->minInChunkX = maze->sizeX % maze->chunkSize == 0 ? maze->chunkSize : maze->sizeX % maze->chunkSize;
 
 	fclose(in);
 	return 0;
@@ -340,7 +366,7 @@ void LoadChunk(MazeData* maze, Chunk* chunk, int chunkIndex)
 	FILE* in = fopen(fileName, "r+b");
 
 	int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
-	int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
+	int verticalNumber = chunkIndex / maze->chunksX == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
 
 	int length = horizontalNumber * verticalNumber * maze->recordSize;
 	char* data = malloc(sizeof(char) * (length + 1));
@@ -396,7 +422,7 @@ void SaveMazeToChunks(char* fileName, MazeData* maze, int fillValue)
 		{
 			int chunkIndex = y * maze->chunksX + x;
 			int horizontalNumber = chunkIndex % maze->chunksX == maze->chunksX - 1 ? maze->minInChunkX : maze->chunkSize;
-			int verticalNumber = chunkIndex / maze->chunksY == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
+			int verticalNumber = chunkIndex / maze->chunksX == maze->chunksY - 1 ? maze->minInChunkY : maze->chunkSize;
 
 			char tempFileName[30] = "chunk_";
 			AddNumberToText(tempFileName, chunkIndex);
